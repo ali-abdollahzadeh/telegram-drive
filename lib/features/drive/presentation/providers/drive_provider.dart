@@ -1,0 +1,274 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../domain/entities/drive_file.dart';
+import '../../domain/entities/drive_folder.dart';
+import '../../domain/repositories/drive_repository.dart';
+import '../../data/repositories/drive_repository_impl.dart';
+
+// ─── Providers ────────────────────────────────────────────────────────────────
+
+final driveRepositoryProvider = Provider<DriveRepository>((ref) {
+  return DriveRepositoryImpl();
+});
+
+final driveProvider = StateNotifierProvider<DriveNotifier, DriveState>((ref) {
+  return DriveNotifier(ref.read(driveRepositoryProvider));
+});
+
+final uploadProvider = StateNotifierProvider<UploadNotifier, UploadState>((ref) {
+  return UploadNotifier(ref.read(driveRepositoryProvider));
+});
+
+// ─── Drive State ──────────────────────────────────────────────────────────────
+
+enum SortOption { newest, oldest, nameAZ, nameZA, sizeAsc, sizeDesc }
+enum ViewMode { grid, list }
+
+class DriveState {
+  final List<DriveFile> files;
+  final List<DriveFolder> folders;
+  final String currentFolderId;
+  final bool isLoadingFiles;
+  final bool isLoadingFolders;
+  final String? error;
+  final String searchQuery;
+  final DriveFileType? filterType;
+  final SortOption sortOption;
+  final ViewMode viewMode;
+
+  const DriveState({
+    this.files = const [],
+    this.folders = const [],
+    this.currentFolderId = DriveRepositoryImpl.savedMessagesId,
+    this.isLoadingFiles = false,
+    this.isLoadingFolders = false,
+    this.error,
+    this.searchQuery = '',
+    this.filterType,
+    this.sortOption = SortOption.newest,
+    this.viewMode = ViewMode.grid,
+  });
+
+  List<DriveFile> get filteredFiles {
+    var result = files;
+    if (searchQuery.isNotEmpty) {
+      result = result.where((f) => f.name.toLowerCase().contains(searchQuery.toLowerCase())).toList();
+    }
+    if (filterType != null) {
+      result = result.where((f) => f.type == filterType).toList();
+    }
+    switch (sortOption) {
+      case SortOption.newest:
+        result.sort((a, b) => b.uploadedAt.compareTo(a.uploadedAt));
+      case SortOption.oldest:
+        result.sort((a, b) => a.uploadedAt.compareTo(b.uploadedAt));
+      case SortOption.nameAZ:
+        result.sort((a, b) => a.name.compareTo(b.name));
+      case SortOption.nameZA:
+        result.sort((a, b) => b.name.compareTo(a.name));
+      case SortOption.sizeAsc:
+        result.sort((a, b) => a.size.compareTo(b.size));
+      case SortOption.sizeDesc:
+        result.sort((a, b) => b.size.compareTo(a.size));
+    }
+    return result;
+  }
+
+  DriveState copyWith({
+    List<DriveFile>? files,
+    List<DriveFolder>? folders,
+    String? currentFolderId,
+    bool? isLoadingFiles,
+    bool? isLoadingFolders,
+    String? error,
+    String? searchQuery,
+    DriveFileType? filterType,
+    SortOption? sortOption,
+    ViewMode? viewMode,
+    bool clearFilter = false,
+    bool clearError = false,
+  }) {
+    return DriveState(
+      files: files ?? this.files,
+      folders: folders ?? this.folders,
+      currentFolderId: currentFolderId ?? this.currentFolderId,
+      isLoadingFiles: isLoadingFiles ?? this.isLoadingFiles,
+      isLoadingFolders: isLoadingFolders ?? this.isLoadingFolders,
+      error: clearError ? null : (error ?? this.error),
+      searchQuery: searchQuery ?? this.searchQuery,
+      filterType: clearFilter ? null : (filterType ?? this.filterType),
+      sortOption: sortOption ?? this.sortOption,
+      viewMode: viewMode ?? this.viewMode,
+    );
+  }
+}
+
+// ─── Drive Notifier ───────────────────────────────────────────────────────────
+
+class DriveNotifier extends StateNotifier<DriveState> {
+  final DriveRepository _repository;
+
+  DriveNotifier(this._repository) : super(const DriveState()) {
+    loadAll();
+  }
+
+  Future<void> loadAll() async {
+    await Future.wait([loadFolders(), loadFiles()]);
+  }
+
+  Future<void> loadFiles({String? folderId}) async {
+    state = state.copyWith(isLoadingFiles: true, clearError: true);
+    try {
+      final id = folderId ?? state.currentFolderId;
+      final files = await _repository.getFiles(folderId: id);
+      state = state.copyWith(files: files, isLoadingFiles: false, currentFolderId: id);
+    } catch (e) {
+      state = state.copyWith(isLoadingFiles: false, error: e.toString());
+    }
+  }
+
+  Future<void> loadFolders() async {
+    state = state.copyWith(isLoadingFolders: true);
+    try {
+      final folders = await _repository.getFolders();
+      state = state.copyWith(folders: folders, isLoadingFolders: false);
+    } catch (e) {
+      state = state.copyWith(isLoadingFolders: false, error: e.toString());
+    }
+  }
+
+  void switchFolder(String folderId) {
+    loadFiles(folderId: folderId);
+  }
+
+  void toggleViewMode() {
+    final next = state.viewMode == ViewMode.grid ? ViewMode.list : ViewMode.grid;
+    state = state.copyWith(viewMode: next);
+  }
+
+  void setSearchQuery(String query) {
+    state = state.copyWith(searchQuery: query);
+  }
+
+  void setFilter(DriveFileType? type) {
+    state = state.copyWith(filterType: type, clearFilter: type == null);
+  }
+
+  void setSort(SortOption option) {
+    state = state.copyWith(sortOption: option);
+  }
+
+  Future<void> deleteFile(DriveFile file) async {
+    try {
+      await _repository.deleteFile(file);
+      final updated = state.files.where((f) => f.id != file.id).toList();
+      state = state.copyWith(files: updated);
+    } catch (e) {
+      state = state.copyWith(error: e.toString());
+    }
+  }
+
+  Future<DriveFolder> createFolder(String name) async {
+    final folder = await _repository.createFolder(name);
+    state = state.copyWith(folders: [...state.folders, folder]);
+    return folder;
+  }
+
+  Future<void> deleteFolder(DriveFolder folder) async {
+    try {
+      await _repository.deleteFolder(folder);
+      final updated = state.folders.where((f) => f.id != folder.id).toList();
+      state = state.copyWith(folders: updated);
+    } catch (e) {
+      state = state.copyWith(error: e.toString());
+    }
+  }
+}
+
+// ─── Upload State ─────────────────────────────────────────────────────────────
+
+class UploadTask {
+  final String id;
+  final String fileName;
+  final String folderId;
+  final double progress;
+  final bool isComplete;
+  final bool hasError;
+  final String? error;
+
+  const UploadTask({
+    required this.id,
+    required this.fileName,
+    required this.folderId,
+    this.progress = 0,
+    this.isComplete = false,
+    this.hasError = false,
+    this.error,
+  });
+
+  UploadTask copyWith({
+    double? progress,
+    bool? isComplete,
+    bool? hasError,
+    String? error,
+  }) {
+    return UploadTask(
+      id: id,
+      fileName: fileName,
+      folderId: folderId,
+      progress: progress ?? this.progress,
+      isComplete: isComplete ?? this.isComplete,
+      hasError: hasError ?? this.hasError,
+      error: error ?? this.error,
+    );
+  }
+}
+
+class UploadState {
+  final List<UploadTask> tasks;
+  const UploadState({this.tasks = const []});
+
+  bool get hasActiveTasks => tasks.any((t) => !t.isComplete && !t.hasError);
+}
+
+class UploadNotifier extends StateNotifier<UploadState> {
+  final DriveRepository _repository;
+
+  UploadNotifier(this._repository) : super(const UploadState());
+
+  Future<void> uploadFile({
+    required String localPath,
+    required String fileName,
+    required String folderId,
+  }) async {
+    final taskId = 'task_${DateTime.now().millisecondsSinceEpoch}';
+    final task = UploadTask(id: taskId, fileName: fileName, folderId: folderId);
+    state = UploadState(tasks: [...state.tasks, task]);
+
+    try {
+      await _repository.uploadFile(
+        localPath: localPath,
+        fileName: fileName,
+        folderId: folderId,
+        onProgress: (progress) {
+          _updateTask(taskId, progress: progress);
+        },
+      );
+      _updateTask(taskId, progress: 1.0, isComplete: true);
+    } catch (e) {
+      _updateTask(taskId, hasError: true, error: e.toString());
+    }
+  }
+
+  void _updateTask(String taskId, {double? progress, bool? isComplete, bool? hasError, String? error}) {
+    final updated = state.tasks.map((t) {
+      if (t.id == taskId) return t.copyWith(progress: progress, isComplete: isComplete, hasError: hasError, error: error);
+      return t;
+    }).toList();
+    state = UploadState(tasks: updated);
+  }
+
+  void clearCompleted() {
+    final active = state.tasks.where((t) => !t.isComplete).toList();
+    state = UploadState(tasks: active);
+  }
+}
