@@ -53,8 +53,13 @@ flutter {
     source = "../.."
 }
 
+repositories {
+    google()
+    mavenCentral()
+    maven { url = uri("https://jitpack.io") }
+}
+
 dependencies {
     // TDLib Java bindings + prebuilt Android natives via JitPack
-    // Source: https://github.com/tdlibx/td
     implementation("com.github.tdlibx:td:1.8.56")
 }

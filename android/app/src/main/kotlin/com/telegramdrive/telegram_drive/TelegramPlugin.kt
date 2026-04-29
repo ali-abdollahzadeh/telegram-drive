@@ -33,15 +33,11 @@ class TelegramPlugin(private val context: Context) :
     private var eventSink: EventChannel.EventSink? = null
 
     init {
-        manager.onAuthState = { state, _ ->
-            android.os.Handler(android.os.Looper.getMainLooper()).post {
-                eventSink?.success(mapOf("type" to "authState", "state" to state))
-            }
+        manager.onAuthState = { state ->
+            eventSink?.success(mapOf("type" to "authState", "state" to state))
         }
-        manager.onError = { code, message ->
-            android.os.Handler(android.os.Looper.getMainLooper()).post {
-                eventSink?.success(mapOf("type" to "error", "code" to code, "message" to message))
-            }
+        manager.onError = { message ->
+            eventSink?.success(mapOf("type" to "error", "message" to message))
         }
     }
 

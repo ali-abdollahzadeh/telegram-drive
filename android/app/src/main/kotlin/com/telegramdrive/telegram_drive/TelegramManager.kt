@@ -2,19 +2,21 @@ package com.telegramdrive.telegram_drive
 
 import android.content.Context
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
-import org.drinkless.td.libcore.telegram.Client
-import org.drinkless.td.libcore.telegram.TdApi
+import org.drinkless.tdlib.Client
+import org.drinkless.tdlib.TdApi
 
 /**
- * Wraps the TDLib Java API (org.drinkless.td) to manage Telegram authentication.
+ * Wraps the TDLib Java API (org.drinkless.tdlib) to manage Telegram authentication.
  *
  * Auth state machine:
- *  authorizationStateWaitTdlibParameters → sends API params automatically
- *  authorizationStateWaitPhoneNumber     → ready for phone number input
- *  authorizationStateWaitCode            → code sent to Telegram app ✅
- *  authorizationStateWaitPassword        → 2FA password needed
- *  authorizationStateReady               → fully authenticated ✅
+ *   authorizationStateWaitTdlibParameters → sends API params automatically
+ *   authorizationStateWaitPhoneNumber     → ready for phone number
+ *   authorizationStateWaitCode            → code sent to user's Telegram app ✅
+ *   authorizationStateWaitPassword        → 2FA password needed
+ *   authorizationStateReady               → fully authenticated ✅
  */
 class TelegramManager(private val context: Context) {
 
@@ -25,8 +27,9 @@ class TelegramManager(private val context: Context) {
     private var client: Client? = null
     private var apiId: Int = 0
     private var apiHash: String = ""
+    private val mainHandler = Handler(Looper.getMainLooper())
 
-    // Callbacks to TelegramPlugin → Flutter
+    // Callbacks fired on main thread → TelegramPlugin → Flutter
     var onAuthState: ((String) -> Unit)? = null
     var onError: ((String) -> Unit)? = null
 
@@ -36,20 +39,14 @@ class TelegramManager(private val context: Context) {
         this.apiId = apiId
         this.apiHash = apiHash
 
-        Client.setLogVerbosityLevel(1) // 1 = errors only
+        // Suppress verbose TDLib logging (1 = errors only)
+        Client.execute(TdApi.SetLogVerbosityLevel(1))
 
-        client = Client.create(
-            ::handleUpdate,   // UpdatesHandler
-            null,             // UpdateExceptionHandler
-            null              // DefaultExceptionHandler
-        )
+        client = Client.create(::handleUpdate, null, null)
     }
 
     fun sendPhoneNumber(phone: String) {
-        client?.send(
-            TdApi.SetAuthenticationPhoneNumber(phone, null),
-            ::handleResult
-        )
+        client?.send(TdApi.SetAuthenticationPhoneNumber(phone, null), ::handleResult)
     }
 
     fun checkCode(code: String) {
@@ -62,78 +59,73 @@ class TelegramManager(private val context: Context) {
 
     fun logout() {
         client?.send(TdApi.LogOut(), ::handleResult)
-        client?.close()
+        client?.send(TdApi.Close(), ::handleResult)
         client = null
     }
 
     fun destroy() {
-        client?.close()
+        client?.send(TdApi.Close(), ::handleResult)
         client = null
     }
 
-    // ---------- TDLib handlers ----------
+    // ---------- Update / result handlers ----------
 
     private fun handleUpdate(obj: TdApi.Object) {
-        Log.d(TAG, "Update: ${obj.javaClass.simpleName}")
-
         when (obj) {
             is TdApi.UpdateAuthorizationState -> handleAuthState(obj.authorizationState)
-            else -> { /* other updates — drive feature will handle these */ }
+            else -> Unit
         }
     }
 
     private fun handleAuthState(state: TdApi.AuthorizationState) {
         Log.d(TAG, "Auth state: ${state.javaClass.simpleName}")
-
         when (state) {
-            is TdApi.AuthorizationStateWaitTdlibParameters -> {
-                // Auto-send TDLib parameters
-                sendTdlibParameters()
-            }
-            is TdApi.AuthorizationStateWaitPhoneNumber -> {
-                onAuthState?.invoke("authorizationStateWaitPhoneNumber")
-            }
-            is TdApi.AuthorizationStateWaitCode -> {
-                onAuthState?.invoke("authorizationStateWaitCode")
-            }
-            is TdApi.AuthorizationStateWaitPassword -> {
-                onAuthState?.invoke("authorizationStateWaitPassword")
-            }
-            is TdApi.AuthorizationStateReady -> {
-                onAuthState?.invoke("authorizationStateReady")
-            }
-            is TdApi.AuthorizationStateLoggingOut -> {
-                onAuthState?.invoke("authorizationStateLoggingOut")
-            }
-            is TdApi.AuthorizationStateClosed -> {
-                onAuthState?.invoke("authorizationStateClosed")
-            }
-            else -> Log.d(TAG, "Unhandled auth state: $state")
+            is TdApi.AuthorizationStateWaitTdlibParameters -> sendTdlibParameters()
+            is TdApi.AuthorizationStateWaitPhoneNumber     -> notifyState("authorizationStateWaitPhoneNumber")
+            is TdApi.AuthorizationStateWaitCode            -> notifyState("authorizationStateWaitCode")
+            is TdApi.AuthorizationStateWaitPassword        -> notifyState("authorizationStateWaitPassword")
+            is TdApi.AuthorizationStateReady               -> notifyState("authorizationStateReady")
+            is TdApi.AuthorizationStateLoggingOut          -> notifyState("authorizationStateLoggingOut")
+            is TdApi.AuthorizationStateClosed              -> notifyState("authorizationStateClosed")
+            else -> Log.d(TAG, "Unhandled auth state: ${state.javaClass.simpleName}")
         }
     }
 
     private fun handleResult(obj: TdApi.Object) {
         if (obj is TdApi.Error) {
-            Log.e(TAG, "TDLib error [${obj.code}]: ${obj.message}")
-            onError?.invoke("${obj.message} (code: ${obj.code})")
+            val msg = "${obj.message} (code: ${obj.code})"
+            Log.e(TAG, "TDLib error: $msg")
+            mainHandler.post { onError?.invoke(msg) }
         }
     }
 
-    // ---------- Private ----------
+    private fun notifyState(state: String) {
+        mainHandler.post { onAuthState?.invoke(state) }
+    }
+
+    // ---------- TDLib parameters ----------
 
     private fun sendTdlibParameters() {
+        val dbPath = context.filesDir.absolutePath + "/tdlib"
+
+        // SetTdlibParameters is a flat class with public fields (TDLib 1.8.x+)
         val params = TdApi.SetTdlibParameters().apply {
-            apiId      = this@TelegramManager.apiId
-            apiHash    = this@TelegramManager.apiHash
-            databaseDirectory   = context.filesDir.absolutePath + "/tdlib"
-            filesDirectory      = context.filesDir.absolutePath + "/tdlib/files"
-            useMessageDatabase  = true
-            useSecretChats      = false
-            systemLanguageCode  = "en"
-            deviceModel         = Build.MODEL
-            systemVersion       = Build.VERSION.RELEASE
-            applicationVersion  = "1.0"
+            apiId                = this@TelegramManager.apiId
+            apiHash              = this@TelegramManager.apiHash
+            databaseDirectory    = dbPath
+            filesDirectory       = "$dbPath/files"
+            databaseEncryptionKey = ByteArray(0)
+            useTestDc            = false
+            useFileDatabase      = true
+            useChatInfoDatabase  = true
+            useMessageDatabase   = true
+            useSecretChats       = false
+            systemLanguageCode   = "en"
+            deviceModel          = Build.MODEL
+            systemVersion        = Build.VERSION.RELEASE
+            applicationVersion   = "1.0"
         }
+
         client?.send(params, ::handleResult)
     }
 }
