@@ -93,6 +93,32 @@ class AuthRepositoryImpl implements AuthRepository {
     await _storage.deleteAll();
   }
 
+  @override
+  Future<bool> restoreSession() async {
+    final apiId = await _storage.read(StorageKeys.apiId);
+    final apiHash = await _storage.read(StorageKeys.apiHash);
+
+    if (apiId == null || apiHash == null) return false;
+
+    // Initialize TDLib — if a valid session database exists on disk,
+    // TDLib will automatically transition to authorizationStateReady
+    await NativeTelegramChannel.initialize(apiId: apiId, apiHash: apiHash);
+
+    try {
+      final state = await _waitForAnyOf([
+        'authorizationStateReady',
+        'authorizationStateWaitPhoneNumber',
+        'authorizationStateWaitCode',
+        'authorizationStateWaitPassword',
+      ], timeout: 10);
+
+      return state == 'authorizationStateReady';
+    } catch (e) {
+      // Timeout or error — session is not valid
+      return false;
+    }
+  }
+
   // ---------- Private helpers ----------
 
   void _subscribeToAuthStream() {
@@ -147,7 +173,7 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   Future<void> _onAuthenticated() async {
-    await _storage.write(StorageKeys.isAuthenticated, 'true');
+    await _storage.write(StorageKeys.isLoggedIn, 'true');
     _sub?.cancel();
   }
 }

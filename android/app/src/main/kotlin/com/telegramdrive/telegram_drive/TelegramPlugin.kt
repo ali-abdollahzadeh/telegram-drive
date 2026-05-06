@@ -39,6 +39,9 @@ class TelegramPlugin(private val context: Context) :
         manager.onError = { message ->
             eventSink?.success(mapOf("type" to "error", "message" to message))
         }
+        manager.onFileUpdate = { fileInfo ->
+            eventSink?.success(mapOf("type" to "fileUpdate", "file" to fileInfo))
+        }
     }
 
     // MethodChannel.MethodCallHandler
@@ -68,6 +71,56 @@ class TelegramPlugin(private val context: Context) :
             "logout" -> {
                 manager.logout()
                 result.success(null)
+            }
+            "getMe" -> {
+                manager.getMe({ user ->
+                    result.success(user)
+                }, { error ->
+                    result.error("TDLIB_ERROR", error, null)
+                })
+            }
+            "getDriveFiles" -> {
+                val chatId = call.argument<Number>("chatId")?.toLong() ?: 0L
+                val limit = call.argument<Int>("limit") ?: 100
+                manager.getChatHistory(chatId, limit, { files ->
+                    result.success(files)
+                }, { error ->
+                    result.error("TDLIB_ERROR", error, null)
+                })
+            }
+            "downloadFile" -> {
+                val fileId = call.argument<Int>("fileId") ?: 0
+                val priority = call.argument<Int>("priority") ?: 1
+                manager.downloadFile(fileId, priority, { file ->
+                    result.success(file)
+                }, { error ->
+                    result.error("TDLIB_ERROR", error, null)
+                })
+            }
+            "getMyChats" -> {
+                val limit = call.argument<Int>("limit") ?: 50
+                manager.getMyChats(limit, { chats ->
+                    result.success(chats)
+                }, { error ->
+                    result.error("TDLIB_ERROR", error, null)
+                })
+            }
+            "uploadFile" -> {
+                val chatId = call.argument<Number>("chatId")?.toLong() ?: 0L
+                val filePath = call.argument<String>("filePath") ?: ""
+                manager.uploadFile(chatId, filePath, { file ->
+                    result.success(file)
+                }, { error ->
+                    result.error("TDLIB_ERROR", error, null)
+                })
+            }
+            "createFolder" -> {
+                val title = call.argument<String>("title") ?: ""
+                manager.createPrivateChannel(title, { chat ->
+                    result.success(chat)
+                }, { error ->
+                    result.error("TDLIB_ERROR", error, null)
+                })
             }
             else -> result.notImplemented()
         }

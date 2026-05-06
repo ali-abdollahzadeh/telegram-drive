@@ -49,7 +49,7 @@ class DriveState {
   });
 
   List<DriveFile> get filteredFiles {
-    var result = files;
+    var result = List<DriveFile>.from(files);
     if (searchQuery.isNotEmpty) {
       result = result.where((f) => f.name.toLowerCase().contains(searchQuery.toLowerCase())).toList();
     }

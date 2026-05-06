@@ -11,9 +11,25 @@ class NativeTelegramChannel {
   static const _method = MethodChannel('com.telegramdrive.app/telegram');
   static const _events = EventChannel('com.telegramdrive.app/telegram_events');
 
+  // Singleton broadcast stream — avoids multiple native listeners
+  static Stream<Map<String, dynamic>>? _broadcastStream;
+  static Stream<Map<String, dynamic>> get _stream {
+    _broadcastStream ??= _events
+        .receiveBroadcastStream()
+        .map((e) => Map<String, dynamic>.from(e as Map))
+        .asBroadcastStream();
+    return _broadcastStream!;
+  }
+
   // Stream of auth state events from TDLib
   static Stream<Map<String, dynamic>> get authStateStream =>
-      _events.receiveBroadcastStream().map((e) => Map<String, dynamic>.from(e as Map));
+      _stream.where((event) => event['type'] == 'authState' || event['type'] == 'error');
+
+  // Stream of file download updates from TDLib
+  static Stream<Map<String, dynamic>> get fileUpdateStream =>
+      _stream
+          .where((event) => event['type'] == 'fileUpdate')
+          .map((event) => Map<String, dynamic>.from(event['file'] as Map));
 
   /// Initialize TDLib with API credentials.
   /// TDLib will immediately push auth states via [authStateStream].
@@ -62,6 +78,79 @@ class NativeTelegramChannel {
   static Future<void> logout() async {
     try {
       await _method.invokeMethod('logout');
+    } on PlatformException catch (e) {
+      throw _mapError(e);
+    }
+  }
+
+  /// Get the current user profile (including phone number).
+  static Future<Map<String, dynamic>> getMe() async {
+    try {
+      final result = await _method.invokeMapMethod<String, dynamic>('getMe');
+      return result ?? {};
+    } on PlatformException catch (e) {
+      throw _mapError(e);
+    }
+  }
+
+  /// Get list of all chats (Saved Messages, channels, groups, etc.)
+  static Future<List<Map<String, dynamic>>> getMyChats({int limit = 50}) async {
+    try {
+      final result = await _method.invokeListMethod<Map<dynamic, dynamic>>('getMyChats', {
+        'limit': limit,
+      });
+      return result?.map((e) => Map<String, dynamic>.from(e)).toList() ?? [];
+    } on PlatformException catch (e) {
+      throw _mapError(e);
+    }
+  }
+
+  /// Get files from a specific chat (e.g. Saved Messages).
+  static Future<List<Map<String, dynamic>>> getDriveFiles({required int chatId, int limit = 100}) async {
+    try {
+      final result = await _method.invokeListMethod<Map<dynamic, dynamic>>('getDriveFiles', {
+        'chatId': chatId,
+        'limit': limit,
+      });
+      return result?.map((e) => Map<String, dynamic>.from(e)).toList() ?? [];
+    } on PlatformException catch (e) {
+      throw _mapError(e);
+    }
+  }
+
+  /// Start downloading a file from Telegram.
+  static Future<Map<String, dynamic>> downloadFile({required int fileId, int priority = 1}) async {
+    try {
+      final result = await _method.invokeMapMethod<String, dynamic>('downloadFile', {
+        'fileId': fileId,
+        'priority': priority,
+      });
+      return result ?? {};
+    } on PlatformException catch (e) {
+      throw _mapError(e);
+    }
+  }
+
+  /// Upload a file to a Telegram chat.
+  static Future<Map<String, dynamic>> uploadFile({required int chatId, required String filePath}) async {
+    try {
+      final result = await _method.invokeMapMethod<String, dynamic>('uploadFile', {
+        'chatId': chatId,
+        'filePath': filePath,
+      });
+      return result ?? {};
+    } on PlatformException catch (e) {
+      throw _mapError(e);
+    }
+  }
+
+  /// Create a private channel (acts as a folder in Telegram Drive).
+  static Future<Map<String, dynamic>> createFolder({required String title}) async {
+    try {
+      final result = await _method.invokeMapMethod<String, dynamic>('createFolder', {
+        'title': title,
+      });
+      return result ?? {};
     } on PlatformException catch (e) {
       throw _mapError(e);
     }

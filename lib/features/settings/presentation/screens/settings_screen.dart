@@ -6,14 +6,24 @@ import '../../../../core/routing/app_router.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../providers/settings_provider.dart';
 import 'package:go_router/go_router.dart';
+import 'package:local_auth/local_auth.dart';
 
-class SettingsScreen extends ConsumerWidget {
+class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends ConsumerState<SettingsScreen> {
+  final LocalAuthentication _auth = LocalAuthentication();
+
+  @override
+  Widget build(BuildContext context) {
     final themeMode = ref.watch(themeModeProvider);
     final viewMode = ref.watch(defaultViewModeProvider);
+    final userProfileAsync = ref.watch(userProfileProvider);
+    final biometricsEnabled = ref.watch(biometricsEnabledProvider);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Settings')),
@@ -21,21 +31,27 @@ class SettingsScreen extends ConsumerWidget {
         children: [
           // Account Section
           _SectionHeader('Account'),
-          _SettingsTile(
-            icon: Icons.phone_rounded,
-            title: 'Phone Number',
-            subtitle: '+1 234 567 8900',
-            trailing: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: AppColors.success.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Text(
-                'Connected',
-                style: TextStyle(color: AppColors.success, fontSize: 12, fontWeight: FontWeight.w600),
+          userProfileAsync.when(
+            data: (profile) => _SettingsTile(
+              icon: Icons.phone_rounded,
+              title: profile['firstName'] != null 
+                  ? '${profile['firstName']} ${profile['lastName'] ?? ''}'.trim() 
+                  : 'Phone Number',
+              subtitle: profile['phoneNumber'] != null ? '+${profile['phoneNumber']}' : 'Loading...',
+              trailing: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppColors.success.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Text(
+                  'Connected',
+                  style: TextStyle(color: AppColors.success, fontSize: 12, fontWeight: FontWeight.w600),
+                ),
               ),
             ),
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (e, st) => _SettingsTile(icon: Icons.error, title: 'Error loading profile', subtitle: e.toString()),
           ),
           _SettingsTile(
             icon: Icons.logout_rounded,
@@ -103,8 +119,8 @@ class SettingsScreen extends ConsumerWidget {
             icon: Icons.fingerprint_rounded,
             title: 'Biometric Unlock',
             trailing: Switch(
-              value: false,
-              onChanged: (_) {},
+              value: biometricsEnabled,
+              onChanged: (val) => _toggleBiometrics(val),
               activeThumbColor: AppColors.primary,
             ),
           ),
@@ -130,7 +146,7 @@ class SettingsScreen extends ConsumerWidget {
           _SettingsTile(
             icon: Icons.info_outline_rounded,
             title: 'App Version',
-            subtitle: '${AppConstants.appVersion} (Phase 1 Mock)',
+            subtitle: '${AppConstants.appVersion} (TDLib Integrated)',
           ),
           _SettingsTile(
             icon: Icons.privacy_tip_rounded,
@@ -146,6 +162,41 @@ class SettingsScreen extends ConsumerWidget {
         ],
       ),
     );
+  }
+
+  Future<void> _toggleBiometrics(bool newValue) async {
+    // try {
+    //   final canAuthenticateWithBiometrics = await _auth.canCheckBiometrics;
+    //   final canAuthenticate = canAuthenticateWithBiometrics || await _auth.isDeviceSupported();
+
+    //   if (!canAuthenticate) {
+    //     if (mounted) {
+    //       ScaffoldMessenger.of(context).showSnackBar(
+    //         const SnackBar(content: Text('Biometrics not supported on this device.')),
+    //       );
+    //     }
+    //     return;
+    //   }
+
+    //   final authenticated = await _auth.authenticate(
+    //     localizedReason: newValue ? 'Enable Biometric Unlock' : 'Disable Biometric Unlock',
+    //     options: const AuthenticationOptions(
+    //       stickyAuth: true,
+    //       biometricOnly: false,
+    //     ),
+    //   );
+
+    //   if (authenticated) {
+        ref.read(biometricsEnabledProvider.notifier).state = newValue;
+        await SettingsService.saveBiometricsEnabled(newValue);
+    //   }
+    // } catch (e) {
+    //   if (mounted) {
+    //     ScaffoldMessenger.of(context).showSnackBar(
+    //       SnackBar(content: Text('Error: $e')),
+    //     );
+    //   }
+    // }
   }
 
   void _showLogoutDialog(BuildContext context, WidgetRef ref) {

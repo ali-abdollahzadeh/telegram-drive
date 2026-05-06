@@ -14,6 +14,7 @@ import '../../features/preview/presentation/screens/audio_preview_screen.dart';
 import '../../features/preview/presentation/screens/pdf_preview_screen.dart';
 import '../../features/search/presentation/screens/search_screen.dart';
 import '../../features/settings/presentation/screens/settings_screen.dart';
+import '../../features/auth/presentation/providers/auth_provider.dart';
 import '../../services/storage/secure_storage_service.dart';
 
 // Route names
@@ -43,7 +44,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           state.matchedLocation == AppRoutes.verifyCode ||
           state.matchedLocation == AppRoutes.verifyPassword;
 
-      if (isLoggedIn && isOnAuth) return AppRoutes.drive;
+      if (isLoggedIn && isOnAuth) {
+        // Restore the TDLib session so the native client is live
+        final authRepo = ref.read(authRepositoryProvider);
+        await authRepo.restoreSession();
+        return AppRoutes.drive;
+      }
       return null;
     },
     routes: [

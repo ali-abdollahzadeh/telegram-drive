@@ -17,4 +17,8 @@ abstract class AuthRepository {
 
   /// Log out and clear session.
   Future<void> logout();
+
+  /// Restore an existing TDLib session using stored credentials.
+  /// Returns true if TDLib reaches authorizationStateReady.
+  Future<bool> restoreSession();
 }
