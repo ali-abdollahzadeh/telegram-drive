@@ -383,6 +383,5 @@ class AppColors {
   static const Color glassBadgeErrorBackground = fillRedNormal;
   static const Color glassBadgeText = Color(0xFFFFFFFF);
 
-// If you do not already have this:
   static const Color fillRedNormal = Color(0xFFEB5E5E);
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/constants/app_text.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../providers/drive_provider.dart';
@@ -13,10 +14,10 @@ class UploadProgressCard extends StatelessWidget {
     if (active.isEmpty) return const SizedBox.shrink();
 
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: AppSpacing.allSM,
       decoration: BoxDecoration(
         color: AppColors.primary.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: AppRadius.mdBR,
         border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
       ),
       child: Column(

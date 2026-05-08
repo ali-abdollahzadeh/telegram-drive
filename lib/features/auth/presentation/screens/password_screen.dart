@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/constants/app_text.dart';
-import '../../../../core/theme/app_colors.dart';
 import '../../../../core/routing/app_router.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/widgets/common_widgets.dart';
 import '../providers/auth_provider.dart';
 import '../widgets/auth_text_field.dart';
 
@@ -53,30 +56,26 @@ class _PasswordScreenState extends ConsumerState<PasswordScreen> {
         leading: BackButton(onPressed: () => context.pop()),
       ),
       body: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: AppSpacing.screen,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 8),
-            Container(
-              width: 60,
-              height: 60,
-              decoration: BoxDecoration(
-                color: AppColors.warning.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: const Icon(Icons.lock_rounded,
-                  color: AppColors.warning, size: 30),
+            AppSpacing.gapXS,
+            const IconBadge(
+              icon: Icons.lock_rounded,
+              color: AppColors.warning,
+              size: 60,
+              iconSize: 30,
             ),
-            const SizedBox(height: 20),
+            AppSpacing.gapXL,
             Text(AppText.twoStepEnabled,
-                style: Theme.of(context).textTheme.headlineSmall),
-            const SizedBox(height: 8),
+                style: AppTextStyles.headlineSmall(context)),
+            AppSpacing.gapXS,
             Text(
               AppText.enterTwoStepPassword,
-              style: Theme.of(context).textTheme.bodyMedium,
+              style: AppTextStyles.bodyMedium(context),
             ),
-            const SizedBox(height: 32),
+            AppSpacing.gapXXL,
             AuthTextField(
               controller: _passCtrl,
               label: AppText.password,
@@ -92,17 +91,11 @@ class _PasswordScreenState extends ConsumerState<PasswordScreen> {
                 color: AppColors.textHintDark,
               ),
             ),
-            const SizedBox(height: 32),
-            ElevatedButton(
-              onPressed: isLoading ? null : _verify,
-              child: isLoading
-                  ? const SizedBox(
-                      width: 22,
-                      height: 22,
-                      child: CircularProgressIndicator(
-                          strokeWidth: 2.5, color: Colors.white),
-                    )
-                  : const Text(AppText.verifyPassword),
+            AppSpacing.gapXXL,
+            PrimaryButton(
+              label: AppText.verifyPassword,
+              isLoading: isLoading,
+              onPressed: _verify,
             ),
           ],
         ),

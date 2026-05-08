@@ -24,7 +24,8 @@ class _ImagePreviewScreenState extends ConsumerState<ImagePreviewScreen> {
     if (_isDownloading) return;
     setState(() => _isDownloading = true);
     try {
-      final path = await ref.read(driveRepositoryProvider).downloadFile(file: file);
+      final path =
+          await ref.read(driveRepositoryProvider).downloadFile(file: file);
       if (!mounted) return;
       setState(() => _downloadedPath = path);
       ScaffoldMessenger.of(context).showSnackBar(
@@ -48,30 +49,22 @@ class _ImagePreviewScreenState extends ConsumerState<ImagePreviewScreen> {
       );
       return;
     }
-    await SharePlus.instance.share(ShareParams(files: [XFile(path)], text: file.name));
+    await SharePlus.instance
+        .share(ShareParams(files: [XFile(path)], text: file.name));
   }
 
   @override
   Widget build(BuildContext context) {
     final driveState = ref.watch(driveProvider);
-    final file = driveState.files.where((f) => f.id == widget.fileId).firstOrNull;
+    final file =
+        driveState.files.where((f) => f.id == widget.fileId).firstOrNull;
 
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
         backgroundColor: Colors.black,
         iconTheme: const IconThemeData(color: Colors.white),
-        title: Text(
-          file?.name ?? AppText.imagePreview,
-          style: const TextStyle(color: Colors.white, fontSize: 16),
-          overflow: TextOverflow.ellipsis,
-        ),
         actions: [
-          IconButton(
-            icon: Icon(_isDownloading ? Icons.downloading_rounded : Icons.download_rounded, color: Colors.white),
-            onPressed: file == null || _isDownloading ? null : () => _download(file),
-            tooltip: 'Download',
-          ),
           IconButton(
             icon: const Icon(Icons.share_rounded, color: Colors.white),
             onPressed: file == null ? null : () => _share(file),
@@ -81,7 +74,8 @@ class _ImagePreviewScreenState extends ConsumerState<ImagePreviewScreen> {
       ),
       body: Center(
         child: file == null
-            ? const Text(AppText.imageNotFound, style: TextStyle(color: Colors.white))
+            ? const Text(AppText.imageNotFound,
+                style: TextStyle(color: Colors.white))
             : _buildImageBody(file),
       ),
     );
@@ -89,11 +83,14 @@ class _ImagePreviewScreenState extends ConsumerState<ImagePreviewScreen> {
 
   Widget _buildImageBody(DriveFile file) {
     final localPath = _downloadedPath ?? file.localPath;
-    if (localPath == null || localPath.isEmpty || !File(localPath).existsSync()) {
+    if (localPath == null ||
+        localPath.isEmpty ||
+        !File(localPath).existsSync()) {
       return Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.image_not_supported_rounded, color: Colors.white54, size: 64),
+          const Icon(Icons.image_not_supported_rounded,
+              color: Colors.white54, size: 64),
           const SizedBox(height: 16),
           Text(
             file.name,
@@ -108,8 +105,11 @@ class _ImagePreviewScreenState extends ConsumerState<ImagePreviewScreen> {
           const SizedBox(height: 24),
           ElevatedButton.icon(
             onPressed: _isDownloading ? null : () => _download(file),
-            icon: Icon(_isDownloading ? Icons.downloading_rounded : Icons.download_rounded),
-            label: Text(_isDownloading ? AppText.downloading : AppText.download),
+            icon: Icon(_isDownloading
+                ? Icons.downloading_rounded
+                : Icons.download_rounded),
+            label:
+                Text(_isDownloading ? AppText.downloading : AppText.download),
           ),
         ],
       );

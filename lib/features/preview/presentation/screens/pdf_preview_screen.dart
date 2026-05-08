@@ -26,7 +26,8 @@ class _PdfPreviewScreenState extends ConsumerState<PdfPreviewScreen> {
     if (_isDownloading) return;
     setState(() => _isDownloading = true);
     try {
-      final path = await ref.read(driveRepositoryProvider).downloadFile(file: file);
+      final path =
+          await ref.read(driveRepositoryProvider).downloadFile(file: file);
       if (!mounted) return;
       setState(() => _downloadedPath = path);
       ScaffoldMessenger.of(context).showSnackBar(
@@ -58,29 +59,29 @@ class _PdfPreviewScreenState extends ConsumerState<PdfPreviewScreen> {
   @override
   Widget build(BuildContext context) {
     final driveState = ref.watch(driveProvider);
-    final file = driveState.files.where((f) => f.id == widget.fileId).firstOrNull;
+    final file =
+        driveState.files.where((f) => f.id == widget.fileId).firstOrNull;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(file?.name ?? AppText.pdfViewer, overflow: TextOverflow.ellipsis),
         actions: [
-          IconButton(
-            icon: Icon(_isDownloading ? Icons.downloading_rounded : Icons.download_rounded),
-            onPressed: file == null || _isDownloading ? null : () => _download(file),
-          ),
           IconButton(
             icon: const Icon(Icons.share_rounded),
             onPressed: file == null ? null : () => _share(file),
           ),
         ],
       ),
-      body: file == null ? const Center(child: Text(AppText.pdfNotFound)) : _buildPdfBody(context, file),
+      body: file == null
+          ? const Center(child: Text(AppText.pdfNotFound))
+          : _buildPdfBody(context, file),
     );
   }
 
   Widget _buildPdfBody(BuildContext context, DriveFile file) {
     final localPath = _downloadedPath ?? file.localPath;
-    if (localPath == null || localPath.isEmpty || !File(localPath).existsSync()) {
+    if (localPath == null ||
+        localPath.isEmpty ||
+        !File(localPath).existsSync()) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(32),
@@ -94,7 +95,8 @@ class _PdfPreviewScreenState extends ConsumerState<PdfPreviewScreen> {
                   color: AppColors.filePdf.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(24),
                 ),
-                child: const Icon(Icons.picture_as_pdf_rounded, color: AppColors.filePdf, size: 56),
+                child: const Icon(Icons.picture_as_pdf_rounded,
+                    color: AppColors.filePdf, size: 56),
               ),
               const SizedBox(height: 24),
               Text(
@@ -111,8 +113,11 @@ class _PdfPreviewScreenState extends ConsumerState<PdfPreviewScreen> {
               const SizedBox(height: 24),
               ElevatedButton.icon(
                 onPressed: _isDownloading ? null : () => _download(file),
-                icon: Icon(_isDownloading ? Icons.downloading_rounded : Icons.download_rounded),
-                label: Text(_isDownloading ? AppText.downloading : AppText.download),
+                icon: Icon(_isDownloading
+                    ? Icons.downloading_rounded
+                    : Icons.download_rounded),
+                label: Text(
+                    _isDownloading ? AppText.downloading : AppText.download),
               ),
             ],
           ),
@@ -149,7 +154,8 @@ class _PdfPreviewScreenState extends ConsumerState<PdfPreviewScreen> {
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 child: Text(
                   '${_currentPage + 1} / $_totalPages',
                   style: const TextStyle(color: Colors.white),

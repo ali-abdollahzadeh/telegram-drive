@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:developer' as dev;
+
 import '../../domain/entities/drive_file.dart';
 import '../../domain/entities/drive_folder.dart';
 import '../../domain/repositories/drive_repository.dart';
@@ -12,36 +12,158 @@ class DriveRepositoryImpl implements DriveRepository {
   /// Cached user ID for Saved Messages chat
   int? _myUserId;
 
-  DriveFileType _resolveType(Map<String, dynamic> map) {
-    final rawType = (map['type'] as String? ?? 'other').toLowerCase();
-    final fileName = (map['fileName'] as String? ?? '').toLowerCase();
+  String _getExtension(String fileName) {
+    if (fileName.isEmpty) return '';
 
-    if (rawType == 'image' || fileName.endsWith('.jpg') || fileName.endsWith('.jpeg') || fileName.endsWith('.png') || fileName.endsWith('.webp') || fileName.endsWith('.gif')) {
+    final cleanName = fileName.split('?').first.split('#').first;
+
+    final lastSlashIndex = cleanName.lastIndexOf('/');
+    final baseName = lastSlashIndex == -1
+        ? cleanName
+        : cleanName.substring(lastSlashIndex + 1);
+
+    final dotIndex = baseName.lastIndexOf('.');
+
+    if (dotIndex == -1 || dotIndex == baseName.length - 1) {
+      return '';
+    }
+
+    return baseName.substring(dotIndex + 1).toLowerCase();
+  }
+
+  DriveFileType _resolveType(Map<String, dynamic> map) {
+    final rawType = (map['type'] ?? 'other').toString().toLowerCase();
+
+    final fileName = (map['fileName'] ??
+            map['name'] ??
+            map['title'] ??
+            map['localPath'] ??
+            '')
+        .toString()
+        .toLowerCase();
+
+    final extension = _getExtension(fileName);
+
+    const imageExtensions = {
+      'jpg',
+      'jpeg',
+      'png',
+      'webp',
+      'gif',
+      'bmp',
+      'heic',
+      'heif',
+      'svg',
+    };
+
+    const videoExtensions = {
+      'mp4',
+      'mkv',
+      'mov',
+      'webm',
+      'avi',
+      'flv',
+      'wmv',
+      'm4v',
+      '3gp',
+    };
+
+    const audioExtensions = {
+      'mp3',
+      'm4a',
+      'wav',
+      'aac',
+      'ogg',
+      'flac',
+      'opus',
+      'wma',
+    };
+
+    const archiveExtensions = {
+      'zip',
+      'rar',
+      '7z',
+      'tar',
+      'gz',
+      'bz2',
+      'xz',
+      'iso',
+    };
+
+    const documentExtensions = {
+      'doc',
+      'docx',
+      'ppt',
+      'pptx',
+      'xls',
+      'xlsx',
+      'txt',
+      'rtf',
+      'odt',
+      'ods',
+      'odp',
+      'pages',
+      'numbers',
+      'key',
+      'csv',
+      'md',
+    };
+
+    if (imageExtensions.contains(extension)) {
       return DriveFileType.image;
     }
-    if (rawType == 'video' || fileName.endsWith('.mp4') || fileName.endsWith('.mkv') || fileName.endsWith('.mov') || fileName.endsWith('.webm')) {
+
+    if (videoExtensions.contains(extension)) {
       return DriveFileType.video;
     }
-    if (rawType == 'audio' || fileName.endsWith('.mp3') || fileName.endsWith('.m4a') || fileName.endsWith('.wav') || fileName.endsWith('.aac') || fileName.endsWith('.ogg')) {
+
+    if (audioExtensions.contains(extension)) {
       return DriveFileType.audio;
     }
-    if (rawType == 'pdf' || fileName.endsWith('.pdf')) {
+
+    if (extension == 'pdf') {
       return DriveFileType.pdf;
     }
-    if (rawType == 'archive' || fileName.endsWith('.zip') || fileName.endsWith('.rar') || fileName.endsWith('.7z') || fileName.endsWith('.tar') || fileName.endsWith('.gz')) {
+
+    if (archiveExtensions.contains(extension)) {
       return DriveFileType.archive;
     }
-    if (rawType == 'document') {
+
+    if (documentExtensions.contains(extension)) {
       return DriveFileType.document;
     }
+
+    // Only trust raw Telegram type for clear media types.
+    // Telegram "document" means generic file, not necessarily a real document.
+    if (rawType == 'image' || rawType == 'photo') {
+      return DriveFileType.image;
+    }
+
+    if (rawType == 'video') {
+      return DriveFileType.video;
+    }
+
+    if (rawType == 'audio' || rawType == 'voice') {
+      return DriveFileType.audio;
+    }
+
+    if (rawType == 'pdf') {
+      return DriveFileType.pdf;
+    }
+
+    if (rawType == 'archive') {
+      return DriveFileType.archive;
+    }
+
     return DriveFileType.other;
   }
 
   Future<int> _getMyUserId() async {
     if (_myUserId != null) return _myUserId!;
+
     final me = await NativeTelegramChannel.getMe();
     _myUserId = (me['id'] as num).toInt();
-    dev.log('[_getMyUserId] resolved myId=$_myUserId');
+
     return _myUserId!;
   }
 
@@ -51,39 +173,38 @@ class DriveRepositoryImpl implements DriveRepository {
     final myId = (me['id'] as num).toInt();
     _myUserId = myId;
 
-    // Fetch all chats from TDLib
     final chats = await NativeTelegramChannel.getMyChats(limit: 50);
 
     final folders = <DriveFolder>[];
 
-    // Always add Saved Messages first
-    folders.add(DriveFolder(
-      id: savedMessagesId,
-      title: 'Saved Messages',
-      telegramChannelId: myId.toString(),
-      createdAt: DateTime.now(),
-      fileCount: 0,
-      isSavedMessages: true,
-    ));
+    folders.add(
+      DriveFolder(
+        id: savedMessagesId,
+        title: 'Saved Messages',
+        telegramChannelId: myId.toString(),
+        createdAt: DateTime.now(),
+        fileCount: 0,
+        isSavedMessages: true,
+      ),
+    );
 
-    // Add channels the user owns/is in
     for (final chat in chats) {
       final chatId = (chat['id'] as num).toInt();
-      final title = chat['title'] as String;
-      final type = chat['type'] as String;
+      final title = chat['title'] as String? ?? 'Untitled';
+      final type = chat['type'] as String? ?? '';
 
-      // Skip the user's own private chat (that's Saved Messages above)
       if (chatId == myId) continue;
 
-      // Include channels and supergroups (these act like folders)
       if (type == 'channel' || type == 'supergroup') {
-        folders.add(DriveFolder(
-          id: chatId.toString(),
-          title: title,
-          telegramChannelId: chatId.toString(),
-          createdAt: DateTime.now(),
-          fileCount: 0,
-        ));
+        folders.add(
+          DriveFolder(
+            id: chatId.toString(),
+            title: title,
+            telegramChannelId: chatId.toString(),
+            createdAt: DateTime.now(),
+            fileCount: 0,
+          ),
+        );
       }
     }
 
@@ -94,7 +215,6 @@ class DriveRepositoryImpl implements DriveRepository {
   Future<List<DriveFile>> getFiles({String? folderId}) async {
     int chatId;
 
-    // Determine the chat ID to fetch from
     if (folderId == null || folderId == savedMessagesId) {
       chatId = await _getMyUserId();
     } else {
@@ -103,22 +223,39 @@ class DriveRepositoryImpl implements DriveRepository {
 
     if (chatId == 0) return [];
 
-    final rawFiles = await NativeTelegramChannel.getDriveFiles(chatId: chatId, limit: 200);
+    final rawFiles = await NativeTelegramChannel.getDriveFiles(
+      chatId: chatId,
+      limit: 200,
+    );
 
     return rawFiles.map((map) {
-      final type = _resolveType(map);
-      final fileName = (map['fileName'] as String?) ?? 'Unknown File';
+      final fileName = (map['fileName'] ??
+              map['name'] ??
+              map['title'] ??
+              map['localPath'] ??
+              'Unknown File')
+          .toString();
 
-      final date = DateTime.fromMillisecondsSinceEpoch((map['date'] as int) * 1000);
-      final localPath = map['localPath'] as String;
+      final type = _resolveType({
+        ...map,
+        'fileName': fileName,
+      });
+
+      final timestamp = map['date'] as int? ?? 0;
+
+      final date = timestamp > 0
+          ? DateTime.fromMillisecondsSinceEpoch(timestamp * 1000)
+          : DateTime.now();
+
+      final localPath = (map['localPath'] ?? '').toString();
 
       return DriveFile(
-        id: map['fileId'].toString(),
-        telegramMessageId: map['messageId'].toString(),
+        id: map['fileId']?.toString() ?? '0',
+        telegramMessageId: map['messageId']?.toString() ?? '0',
         folderId: folderId ?? savedMessagesId,
         name: fileName,
         type: type,
-        size: map['size'] ?? 0,
+        size: map['size'] as int? ?? 0,
         uploadedAt: date,
         localPath: localPath.isNotEmpty ? localPath : null,
         isDownloaded: map['isDownloadingCompleted'] == true,
@@ -138,9 +275,9 @@ class DriveRepositoryImpl implements DriveRepository {
     final sub = NativeTelegramChannel.fileUpdateStream.listen((event) {
       if (event['fileId'] == fileId) {
         final isCompleted = event['isDownloadingCompleted'] == true;
-        final size = event['size'] as int;
-        final downloaded = event['downloadedPrefixSize'] as int;
-        final localPath = event['localPath'] as String;
+        final size = event['size'] as int? ?? 0;
+        final downloaded = event['downloadedPrefixSize'] as int? ?? 0;
+        final localPath = (event['localPath'] ?? '').toString();
 
         if (size > 0 && onProgress != null) {
           onProgress(downloaded / size);
@@ -153,28 +290,42 @@ class DriveRepositoryImpl implements DriveRepository {
     });
 
     try {
-      final initialRes = await NativeTelegramChannel.downloadFile(fileId: fileId, priority: 32);
-      final initialPath = initialRes['localPath'] as String? ?? '';
-      if (initialRes['isDownloadingCompleted'] == true && initialPath.isNotEmpty) {
-        if (!completer.isCompleted) completer.complete(initialPath);
+      final initialRes = await NativeTelegramChannel.downloadFile(
+        fileId: fileId,
+        priority: 32,
+      );
+
+      final initialPath = (initialRes['localPath'] ?? '').toString();
+
+      if (initialRes['isDownloadingCompleted'] == true &&
+          initialPath.isNotEmpty) {
+        if (!completer.isCompleted) {
+          completer.complete(initialPath);
+        }
       }
 
-      // Wait for completion with timeout
       final result = await completer.future.timeout(
         const Duration(minutes: 5),
         onTimeout: () => throw Exception('Download timed out'),
       );
+
       return result;
     } finally {
-      sub.cancel();
+      await sub.cancel();
     }
   }
 
   @override
-  Future<List<DriveFile>> searchFiles(String query, {String? folderId}) async {
+  Future<List<DriveFile>> searchFiles(
+    String query, {
+    String? folderId,
+  }) async {
     final files = await getFiles(folderId: folderId);
     final q = query.toLowerCase();
-    return files.where((f) => f.name.toLowerCase().contains(q)).toList();
+
+    return files.where((file) {
+      return file.name.toLowerCase().contains(q);
+    }).toList();
   }
 
   @override
@@ -185,25 +336,38 @@ class DriveRepositoryImpl implements DriveRepository {
     void Function(double progress)? onProgress,
   }) async {
     int chatId;
+
     if (folderId == savedMessagesId) {
       chatId = await _getMyUserId();
     } else {
       chatId = int.tryParse(folderId) ?? 0;
     }
 
-    if (chatId == 0) throw Exception('Invalid folder ID');
+    if (chatId == 0) {
+      throw Exception('Invalid folder ID');
+    }
 
-    final result = await NativeTelegramChannel.uploadFile(chatId: chatId, filePath: localPath);
+    final result = await NativeTelegramChannel.uploadFile(
+      chatId: chatId,
+      filePath: localPath,
+    );
+
+    final resolvedType = _resolveType({
+      'fileName': fileName,
+      'localPath': localPath,
+      'type': result['type'] ?? 'other',
+    });
 
     return DriveFile(
       id: result['fileId']?.toString() ?? '0',
       telegramMessageId: result['messageId']?.toString() ?? '0',
       folderId: folderId,
       name: fileName,
-      type: DriveFileType.document,
+      type: resolvedType,
       size: result['size'] as int? ?? 0,
       uploadedAt: DateTime.now(),
-      isDownloaded: false,
+      localPath: localPath,
+      isDownloaded: true,
     );
   }
 
@@ -217,57 +381,39 @@ class DriveRepositoryImpl implements DriveRepository {
     if (files.isEmpty) return;
 
     final myId = await _getMyUserId();
-    dev.log('[deleteFiles] myId=$myId, deleting ${files.length} file(s)');
 
-    // Group files by chatId
     final map = <int, List<int>>{};
 
     for (final file in files) {
       final chatId = file.folderId == savedMessagesId
           ? myId
-          : (int.tryParse(file.folderId) ?? 0);
+          : int.tryParse(file.folderId) ?? 0;
+
       final msgId = int.tryParse(file.telegramMessageId) ?? 0;
 
-      dev.log('[deleteFiles] file=${file.name} folderId=${file.folderId} chatId=$chatId telegramMessageId=${file.telegramMessageId} msgId=$msgId');
-
-      if (chatId == 0) {
-        dev.log('[deleteFiles] SKIPPED ${file.name}: chatId is 0');
-        continue;
-      }
-      if (msgId == 0) {
-        dev.log('[deleteFiles] SKIPPED ${file.name}: msgId is 0');
-        continue;
-      }
+      if (chatId == 0) continue;
+      if (msgId == 0) continue;
 
       map.putIfAbsent(chatId, () => []).add(msgId);
     }
 
-    if (map.isEmpty) {
-      dev.log('[deleteFiles] Nothing to delete - map is empty');
-      return;
-    }
+    if (map.isEmpty) return;
 
     for (final entry in map.entries) {
-      dev.log('[deleteFiles] Calling deleteMessages chatId=${entry.key} messageIds=${entry.value}');
-      try {
-        await NativeTelegramChannel.deleteMessages(
-          chatId: entry.key,
-          messageIds: entry.value,
-          revoke: true,
-        );
-        dev.log('[deleteFiles] deleteMessages SUCCESS for chatId=${entry.key}');
-      } catch (e) {
-        dev.log('[deleteFiles] deleteMessages ERROR: $e');
-        rethrow;
-      }
+      await NativeTelegramChannel.deleteMessages(
+        chatId: entry.key,
+        messageIds: entry.value,
+        revoke: true,
+      );
     }
   }
 
   @override
   Future<DriveFolder> createFolder(String name) async {
     final result = await NativeTelegramChannel.createFolder(title: name);
-    final chatId = result['id'] as int;
-    final title = result['title'] as String;
+
+    final chatId = (result['id'] as num).toInt();
+    final title = result['title'] as String? ?? name;
 
     return DriveFolder(
       id: chatId.toString(),
@@ -280,6 +426,8 @@ class DriveRepositoryImpl implements DriveRepository {
 
   @override
   Future<void> deleteFolder(DriveFolder folder) async {
-    throw UnimplementedError('Folder deletion is pending native implementation.');
+    throw UnimplementedError(
+      'Folder deletion is pending native implementation.',
+    );
   }
 }

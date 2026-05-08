@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_text_styles.dart';
 
 class AuthTextField extends StatelessWidget {
   final TextEditingController controller;
@@ -34,11 +36,11 @@ class AuthTextField extends StatelessWidget {
       children: [
         Text(
           label,
-          style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                color: Theme.of(context).colorScheme.onSurface,
-              ),
+          style: AppTextStyles.labelLarge(context)?.copyWith(
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
         ),
-        const SizedBox(height: 8),
+        AppSpacing.gapXS,
         TextFormField(
           controller: controller,
           keyboardType: keyboardType,

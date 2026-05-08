@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/constants/app_text.dart';
-import '../../../../core/theme/app_colors.dart';
 import '../../../../core/routing/app_router.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/widgets/common_widgets.dart';
 import '../providers/auth_provider.dart';
 import '../widgets/auth_text_field.dart';
 
@@ -88,21 +91,21 @@ class _CodeVerificationScreenState extends ConsumerState<CodeVerificationScreen>
         leading: BackButton(onPressed: () => context.pop()),
       ),
       body: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: AppSpacing.screen,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 8),
+            AppSpacing.gapXS,
             Text(
               AppText.enterVerificationCode,
-              style: Theme.of(context).textTheme.headlineSmall,
+              style: AppTextStyles.headlineSmall(context),
             ),
-            const SizedBox(height: 8),
+            AppSpacing.gapXS,
             Text(
               '${AppText.codeSentTo}${widget.phoneNumber}',
-              style: Theme.of(context).textTheme.bodyMedium,
+              style: AppTextStyles.bodyMedium(context),
             ),
-            const SizedBox(height: 40),
+            AppSpacing.gapXXXL,
 
             AuthTextField(
               controller: _codeCtrl,
@@ -113,7 +116,7 @@ class _CodeVerificationScreenState extends ConsumerState<CodeVerificationScreen>
               autofocus: true,
               maxLength: 6,
             ),
-            const SizedBox(height: 16),
+            AppSpacing.gapMD,
 
             // Resend row
             Row(
@@ -123,7 +126,7 @@ class _CodeVerificationScreenState extends ConsumerState<CodeVerificationScreen>
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
                 if (_canResend) ...[
-                  const SizedBox(width: 4),
+                  AppSpacing.hGapXXS,
                   TextButton(
                     onPressed: () {
                       setState(() {
@@ -138,17 +141,11 @@ class _CodeVerificationScreenState extends ConsumerState<CodeVerificationScreen>
                 ],
               ],
             ),
-            const SizedBox(height: 32),
-
-            ElevatedButton(
-              onPressed: isLoading ? null : _verify,
-              child: isLoading
-                  ? const SizedBox(
-                      width: 22,
-                      height: 22,
-                      child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white),
-                    )
-                  : const Text(AppText.verify),
+            AppSpacing.gapXXL,
+            PrimaryButton(
+              label: AppText.verify,
+              isLoading: isLoading,
+              onPressed: _verify,
             ),
           ],
         ),

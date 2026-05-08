@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/constants/app_text.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/file_utils.dart';
@@ -39,8 +40,8 @@ class FileGridItem extends StatelessWidget {
         decoration: BoxDecoration(
           color: isSelected
               ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.1)
-              : (isDark ? const Color(0xFF1C1C1E) : Colors.white),
-          borderRadius: BorderRadius.circular(16),
+              : (isDark ? AppColors.cardDark : Colors.white),
+          borderRadius: AppRadius.lgBR,
           border: isSelected
               ? Border.all(color: Theme.of(context).colorScheme.primary, width: 2)
               : null,
@@ -103,11 +104,11 @@ class FileGridItem extends StatelessWidget {
                       ),
                     if (isSelectionMode)
                       Positioned(
-                        top: 8,
-                        right: 8,
+                        top: AppSpacing.xs,
+                        right: AppSpacing.xs,
                         child: Icon(
                           isSelected ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded,
-                          color: isSelected ? Theme.of(context).colorScheme.primary : Colors.grey,
+                          color: isSelected ? Theme.of(context).colorScheme.primary : AppColors.textSecondaryDark,
                         ),
                       ),
                   ],

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/constants/app_text.dart';
+import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/widgets/common_widgets.dart';
 import '../../../drive/domain/entities/drive_file.dart';
 import '../../../drive/presentation/providers/drive_provider.dart';

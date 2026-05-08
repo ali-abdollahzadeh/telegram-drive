@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/constants/app_text.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/utils/file_utils.dart';
 import '../../domain/entities/drive_file.dart';
 
@@ -32,18 +34,18 @@ class FileListItem extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      padding: AppSpacing.hMD_vXXS,
       child: InkWell(
         onTap: onTap,
         onLongPress: onLongPress,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: AppRadius.mdBR,
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          padding: AppSpacing.hMD_vSM,
           decoration: BoxDecoration(
             color: isSelected
                 ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.1)
-                : (isDark ? const Color(0xFF1C1C1E) : Colors.white),
-            borderRadius: BorderRadius.circular(12),
+                : (isDark ? AppColors.cardDark : Colors.white),
+            borderRadius: AppRadius.mdBR,
             border: isSelected
                 ? Border.all(color: Theme.of(context).colorScheme.primary, width: 2)
                 : null,
@@ -64,11 +66,11 @@ class FileListItem extends StatelessWidget {
                 height: 48,
                 decoration: BoxDecoration(
                   color: color.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: AppRadius.mdBR,
                 ),
                 child: Icon(_getIcon(file.type), color: color, size: 24),
               ),
-              const SizedBox(width: 14),
+              const SizedBox(width: AppSpacing.md),
               // Info
               Expanded(
                 child: Column(
