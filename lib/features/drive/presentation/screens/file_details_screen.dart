@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/constants/app_text.dart';
 import '../../../../core/routing/app_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/file_utils.dart';
@@ -68,7 +69,7 @@ class _FileDetailsScreenState extends ConsumerState<FileDetailsScreen> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Download failed: $e')),
+        SnackBar(content: Text('${AppText.downloadFailed}$e')),
       );
     } finally {
       if (mounted) {
@@ -92,8 +93,8 @@ class _FileDetailsScreenState extends ConsumerState<FileDetailsScreen> {
           SnackBar(
             content: Text(
               _downloadedPath == null
-                  ? 'File downloaded. In-app preview is not available for this file type.'
-                  : 'File downloaded to: $_downloadedPath',
+                  ? AppText.noPreviewAvailable
+                  : '${AppText.fileDownloadedTo}$_downloadedPath',
             ),
           ),
         );
@@ -108,8 +109,8 @@ class _FileDetailsScreenState extends ConsumerState<FileDetailsScreen> {
 
     if (file == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('File Details')),
-        body: const Center(child: Text('File not found')),
+        appBar: AppBar(title: const Text(AppText.fileDetails)),
+        body: const Center(child: Text(AppText.fileNotFound)),
       );
     }
 
@@ -160,10 +161,10 @@ class _FileDetailsScreenState extends ConsumerState<FileDetailsScreen> {
               ),
             ),
             const SizedBox(height: 32),
-            _InfoRow('Size', SizeFormatter.format(file.size)),
-            _InfoRow('Uploaded', DateFormatter.formatFull(file.uploadedAt)),
-            _InfoRow('Type', FileUtils.getFileTypeLabel(file.type)),
-            _InfoRow('Message ID', file.telegramMessageId),
+            _InfoRow(AppText.infoLabelSize, SizeFormatter.format(file.size)),
+            _InfoRow(AppText.infoLabelUploaded, DateFormatter.formatFull(file.uploadedAt)),
+            _InfoRow(AppText.infoLabelType, FileUtils.getFileTypeLabel(file.type)),
+            _InfoRow(AppText.infoLabelMessageId, file.telegramMessageId),
             if (_isDownloading) ...[
               const SizedBox(height: 8),
               LinearProgressIndicator(
@@ -171,8 +172,8 @@ class _FileDetailsScreenState extends ConsumerState<FileDetailsScreen> {
               const SizedBox(height: 8),
               Text(
                 _downloadProgress > 0
-                    ? 'Downloading ${(100 * _downloadProgress).toStringAsFixed(0)}%'
-                    : 'Starting download...',
+                    ? '${AppText.downloadingPercent} ${(100 * _downloadProgress).toStringAsFixed(0)}%'
+                    : AppText.startingDownload,
                 style: Theme.of(context).textTheme.bodySmall,
               ),
             ],
@@ -191,8 +192,8 @@ class _FileDetailsScreenState extends ConsumerState<FileDetailsScreen> {
                     ),
                     label: Text(
                       alreadyDownloaded
-                          ? 'Open'
-                          : (_isDownloading ? 'Downloading...' : 'Download'),
+                          ? AppText.open
+                          : (_isDownloading ? AppText.downloading : AppText.download),
                     ),
                   ),
                 ),
@@ -203,7 +204,7 @@ class _FileDetailsScreenState extends ConsumerState<FileDetailsScreen> {
                         ref.read(driveProvider.notifier).deleteFile(file),
                     icon: const Icon(Icons.delete_outline_rounded,
                         color: AppColors.error),
-                    label: const Text('Delete',
+                    label: const Text(AppText.delete,
                         style: TextStyle(color: AppColors.error)),
                     style: OutlinedButton.styleFrom(
                         side: const BorderSide(color: AppColors.error)),

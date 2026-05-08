@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:share_plus/share_plus.dart';
 import 'dart:io';
+import '../../../../core/constants/app_text.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/routing/app_router.dart';
 import '../../../../core/widgets/common_widgets.dart';
@@ -52,7 +53,7 @@ class _DriveHomeScreenState extends ConsumerState<DriveHomeScreen> {
         }
       }
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Uploading ${result.files.length} file(s)...')),
+        SnackBar(content: Text('${AppText.uploadingN} ${result.files.length} ${AppText.uploadingFilesSuffix}')),
       );
       return;
     }
@@ -66,12 +67,12 @@ class _DriveHomeScreenState extends ConsumerState<DriveHomeScreen> {
       await ref.read(driveRepositoryProvider).downloadFile(file: file);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${file.name} downloaded')),
+        SnackBar(content: Text('${file.name} ${AppText.downloadedSnack}')),
       );
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Download failed: $e')),
+        SnackBar(content: Text('${AppText.downloadFailed}$e')),
       );
     }
   }
@@ -84,7 +85,7 @@ class _DriveHomeScreenState extends ConsumerState<DriveHomeScreen> {
       } catch (e) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Share failed: $e')),
+          SnackBar(content: Text('${AppText.shareFailed}$e')),
         );
         return;
       }
@@ -129,7 +130,7 @@ class _DriveHomeScreenState extends ConsumerState<DriveHomeScreen> {
                     ),
                   ),
                   title: Text(folder.title),
-                  subtitle: Text('${folder.fileCount} files'),
+                  subtitle: Text('${folder.fileCount} ${AppText.fileCountSuffix}'),
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12)),
                   onTap: () {
@@ -146,7 +147,7 @@ class _DriveHomeScreenState extends ConsumerState<DriveHomeScreen> {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                           content:
-                              Text('Uploading ${files.length} file(s)...')),
+                              Text('${AppText.uploadingN} ${files.length} ${AppText.uploadingFilesSuffix}')),
                     );
                   },
                 )),
@@ -167,8 +168,8 @@ class _DriveHomeScreenState extends ConsumerState<DriveHomeScreen> {
     ScaffoldMessenger.of(context).clearSnackBars();
 
     final label = files.length == 1
-        ? '"${files.first.name}" will be deleted'
-        : '${files.length} files will be deleted';
+        ? '"${files.first.name}" ${AppText.willBeDeleted}'
+        : '${files.length} ${AppText.filesWillBeDeleted}';
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -221,13 +222,13 @@ class _DriveHomeScreenState extends ConsumerState<DriveHomeScreen> {
           controller: ctrl,
           autofocus: true,
           decoration: const InputDecoration(
-            hintText: 'Folder name',
+            hintText: AppText.folderNameHint,
             prefixIcon: Icon(Icons.folder_rounded),
           ),
         ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+              onPressed: () => Navigator.pop(ctx), child: const Text(AppText.cancel)),
           ElevatedButton(
             onPressed: () {
               Navigator.pop(ctx);
@@ -236,7 +237,7 @@ class _DriveHomeScreenState extends ConsumerState<DriveHomeScreen> {
               }
             },
             style: ElevatedButton.styleFrom(minimumSize: const Size(100, 44)),
-            child: const Text('Create'),
+            child: const Text(AppText.create),
           ),
         ],
       ),
@@ -287,14 +288,14 @@ class _DriveHomeScreenState extends ConsumerState<DriveHomeScreen> {
             _buildFilterBar(driveState),
             if (driveState.isLoadingFiles)
               const SliverFillRemaining(
-                  child: LoadingView(message: 'Loading files...'))
+                  child: LoadingView(message: AppText.loadingFiles))
             else if (files.isEmpty)
               SliverFillRemaining(
                 child: EmptyState(
                   icon: Icons.cloud_upload_outlined,
-                  title: 'No files yet',
-                  subtitle: 'Upload your first file to get started',
-                  actionLabel: 'Upload',
+                  title: AppText.noFilesYet,
+                  subtitle: AppText.uploadFirstFile,
+                  actionLabel: AppText.upload,
                   onAction: _pickAndUpload,
                 ),
               )
@@ -313,7 +314,7 @@ class _DriveHomeScreenState extends ConsumerState<DriveHomeScreen> {
               backgroundColor: AppColors.primary,
               foregroundColor: Colors.white,
               icon: const Icon(Icons.upload_rounded),
-              label: const Text('Upload'),
+              label: const Text(AppText.upload),
               elevation: 4,
             ),
     );
@@ -332,7 +333,7 @@ class _DriveHomeScreenState extends ConsumerState<DriveHomeScreen> {
           onPressed: () => ref.read(driveProvider.notifier).clearSelection(),
         ),
         title: Text(
-          '${driveState.selectedFileIds.length} selected',
+          '${driveState.selectedFileIds.length} ${AppText.selected}',
           style: const TextStyle(fontWeight: FontWeight.w600),
         ),
         actions: [
@@ -345,7 +346,7 @@ class _DriveHomeScreenState extends ConsumerState<DriveHomeScreen> {
                   .toList();
               _deleteFiles(selectedFiles);
             },
-            tooltip: 'Delete selected',
+            tooltip: AppText.tooltipDeleteSelected,
           ),
         ],
       );
@@ -358,7 +359,7 @@ class _DriveHomeScreenState extends ConsumerState<DriveHomeScreen> {
       backgroundColor: isDark ? Colors.black : const Color(0xFFF2F2F7),
       surfaceTintColor: Colors.transparent,
       title: Text(
-        'TeleDrive',
+        AppText.appTitle,
         style: TextStyle(
           color: isDark ? Colors.white : Colors.black,
           fontWeight: FontWeight.w700,
@@ -371,24 +372,24 @@ class _DriveHomeScreenState extends ConsumerState<DriveHomeScreen> {
         IconButton(
           icon: const Icon(Icons.search_rounded),
           onPressed: () => context.push(AppRoutes.search),
-          tooltip: 'Search',
+          tooltip: AppText.tooltipSearch,
         ),
         IconButton(
           icon: Icon(driveState.viewMode == ViewMode.grid
               ? Icons.view_list_rounded
               : Icons.grid_view_rounded),
           onPressed: () => ref.read(driveProvider.notifier).toggleViewMode(),
-          tooltip: 'Toggle view',
+          tooltip: AppText.tooltipToggleView,
         ),
         IconButton(
           icon: const Icon(Icons.create_new_folder_rounded),
           onPressed: _showCreateFolderDialog,
-          tooltip: 'Create folder',
+          tooltip: AppText.tooltipCreateFolder,
         ),
         IconButton(
           icon: const Icon(Icons.settings_rounded),
           onPressed: () => context.push(AppRoutes.settings),
-          tooltip: 'Settings',
+          tooltip: AppText.tooltipSettings,
         ),
       ],
     );
@@ -398,14 +399,14 @@ class _DriveHomeScreenState extends ConsumerState<DriveHomeScreen> {
     final types = [null, ...DriveFileType.values];
 
     final labels = {
-      null: 'All',
-      DriveFileType.image: 'Images',
-      DriveFileType.video: 'Videos',
-      DriveFileType.audio: 'Audio',
-      DriveFileType.pdf: 'PDF',
-      DriveFileType.document: 'Docs',
-      DriveFileType.archive: 'Archives',
-      DriveFileType.other: 'Other',
+      null: AppText.filterAll,
+      DriveFileType.image: AppText.filterImages,
+      DriveFileType.video: AppText.filterVideos,
+      DriveFileType.audio: AppText.filterAudio,
+      DriveFileType.pdf: AppText.filterPdf,
+      DriveFileType.document: AppText.filterDocs,
+      DriveFileType.archive: AppText.filterArchives,
+      DriveFileType.other: AppText.filterOther,
     };
 
     final icons = {
@@ -439,7 +440,7 @@ class _DriveHomeScreenState extends ConsumerState<DriveHomeScreen> {
                           width: 18,
                           height: 18,
                         ),
-                        label: Text(labels[type] ?? 'Other'),
+                        label: Text(labels[type] ?? AppText.filterOther),
                         selected: isSelected,
                         onSelected: (_) =>
                             ref.read(driveProvider.notifier).setFilter(type),
@@ -534,17 +535,17 @@ class _SortButton extends StatelessWidget {
       padding: const EdgeInsets.only(right: 8),
       child: PopupMenuButton<SortOption>(
         icon: const Icon(Icons.sort_rounded, size: 22),
-        tooltip: 'Sort',
+        tooltip: AppText.tooltipSearch,
         onSelected: onChanged,
         itemBuilder: (_) => const [
-          PopupMenuItem(value: SortOption.newest, child: Text('Newest first')),
-          PopupMenuItem(value: SortOption.oldest, child: Text('Oldest first')),
-          PopupMenuItem(value: SortOption.nameAZ, child: Text('Name A–Z')),
-          PopupMenuItem(value: SortOption.nameZA, child: Text('Name Z–A')),
+          PopupMenuItem(value: SortOption.newest, child: Text(AppText.sortNewest)),
+          PopupMenuItem(value: SortOption.oldest, child: Text(AppText.sortOldest)),
+          PopupMenuItem(value: SortOption.nameAZ, child: Text(AppText.sortNameAZ)),
+          PopupMenuItem(value: SortOption.nameZA, child: Text(AppText.sortNameZA)),
           PopupMenuItem(
-              value: SortOption.sizeDesc, child: Text('Largest first')),
+              value: SortOption.sizeDesc, child: Text(AppText.sortLargest)),
           PopupMenuItem(
-              value: SortOption.sizeAsc, child: Text('Smallest first')),
+              value: SortOption.sizeAsc, child: Text(AppText.sortSmallest)),
         ],
       ),
     );

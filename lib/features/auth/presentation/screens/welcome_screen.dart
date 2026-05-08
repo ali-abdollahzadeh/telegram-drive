@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/constants/app_text.dart';
 import '../../../../core/routing/app_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../features/settings/presentation/providers/settings_provider.dart';
@@ -149,10 +150,10 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen>
                 opacity: _contentOpacity,
                 child: Tooltip(
                   message: themeMode == ThemeMode.dark
-                      ? 'Dark mode'
+                      ? AppText.tooltipDarkMode
                       : themeMode == ThemeMode.light
-                          ? 'Light mode'
-                          : 'System theme',
+                          ? AppText.tooltipLightMode
+                          : AppText.tooltipSystemTheme,
                   child: IconButton(
                     onPressed: _toggleTheme,
                     icon: AnimatedSwitcher(
@@ -349,15 +350,15 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen>
           alignment: WrapAlignment.center,
           children: [
             _FeaturePill(
-                icon: Icons.lock_rounded, label: 'Private', isDark: isDark),
+                icon: Icons.lock_rounded, label: AppText.pillPrivate, isDark: isDark),
             _FeaturePill(
                 icon: Icons.cloud_upload_rounded,
-                label: 'Upload',
+                label: AppText.pillUpload,
                 isDark: isDark),
             _FeaturePill(
-                icon: Icons.folder_rounded, label: 'Organize', isDark: isDark),
+                icon: Icons.folder_rounded, label: AppText.pillOrganize, isDark: isDark),
             _FeaturePill(
-                icon: Icons.preview_rounded, label: 'Preview', isDark: isDark),
+                icon: Icons.preview_rounded, label: AppText.pillPreview, isDark: isDark),
           ],
         ),
       ],
@@ -384,7 +385,7 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen>
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  'Get Started',
+                  AppText.getStarted,
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
@@ -398,7 +399,7 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen>
         ),
         const SizedBox(height: 16),
         Text(
-          'Your data never leaves your Telegram account.',
+          AppText.dataStaysOnDevice,
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 color:
                     isDark ? AppColors.textHintDark : AppColors.lightTextHint,

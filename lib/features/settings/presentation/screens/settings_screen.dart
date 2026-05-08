@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:file_picker/file_picker.dart';
 
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/constants/app_text.dart';
 import '../../../../services/platform/native_telegram_channel.dart';
 import '../../../../core/routing/app_router.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -43,7 +44,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
                 final fullName = '${firstName ?? ''} ${lastName ?? ''}'.trim();
                 final displayName =
-                    fullName.isNotEmpty ? fullName : 'Telegram User';
+                    fullName.isNotEmpty ? fullName : AppText.telegramUser;
 
                 final phoneText = phoneNumber != null && phoneNumber.isNotEmpty
                     ? '+$phoneNumber'
@@ -72,8 +73,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         _TelegramSettingsTile(
                           icon: Icons.laptop_mac,
                           iconBackground: const Color(0xFFFFA000),
-                          title: 'Theme',
-                          subtitle: 'Choose your theme',
+                          title: AppText.settingsTitleTheme,
+                          subtitle: AppText.settingsSubtitleTheme,
                           trailing: DropdownButtonHideUnderline(
                             child: DropdownButton<ThemeMode>(
                               value: themeMode,
@@ -94,15 +95,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                               items: const [
                                 DropdownMenuItem(
                                   value: ThemeMode.system,
-                                  child: Text('System'),
+                                  child: Text(AppText.themeSystem),
                                 ),
                                 DropdownMenuItem(
                                   value: ThemeMode.dark,
-                                  child: Text('Dark'),
+                                  child: Text(AppText.themeDark),
                                 ),
                                 DropdownMenuItem(
                                   value: ThemeMode.light,
-                                  child: Text('Light'),
+                                  child: Text(AppText.themeLight),
                                 ),
                               ],
                             ),
@@ -111,22 +112,22 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         _TelegramSettingsTile(
                           icon: Icons.lock_rounded,
                           iconBackground: const Color(0xFF31C754),
-                          title: 'Privacy & Security',
-                          subtitle: 'Session, Devices, Local Data',
+                          title: AppText.settingsTitlePrivacy,
+                          subtitle: AppText.settingsSubtitlePrivacy,
                           onTap: () => _showClearSessionDialog(context, ref),
                         ),
                         _TelegramSettingsTile(
                           icon: Icons.storage_rounded,
                           iconBackground: const Color(0xFF4A74F5),
-                          title: 'Data and Storage',
-                          subtitle: 'Clear TDLib cache',
+                          title: AppText.settingsTitleDataStorage,
+                          subtitle: AppText.settingsSubtitleDataStorage,
                           onTap: () async {
                             try {
                               await NativeTelegramChannel.optimizeStorage();
                               if (context.mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
-                                    content: Text('Cache cleared successfully'),
+                                    content: Text(AppText.cacheCleared),
                                   ),
                                 );
                               }
@@ -142,7 +143,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         _TelegramSettingsTile(
                           icon: Icons.folder_rounded,
                           iconBackground: const Color(0xFF22AEEA),
-                          title: 'Download Location',
+                          title: AppText.settingsTitleDownloadLocation,
                           subtitle: downloadLocation,
                           onTap: () async {
                             final result =
@@ -164,8 +165,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         _TelegramSettingsTile(
                           icon: Icons.privacy_tip_rounded,
                           iconBackground: const Color(0xFFB8860B),
-                          title: 'Privacy Policy',
-                          subtitle: 'All data stays on your device',
+                          title: AppText.settingsTitlePrivacyPolicy,
+                          subtitle: AppText.settingsSubtitlePrivacyPolicy,
                           onTap: () {
                             context.push(AppRoutes.privacyPolicy);
                           },
@@ -173,8 +174,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         _TelegramSettingsTile(
                           icon: Icons.code_rounded,
                           iconBackground: const Color(0xFF64748B),
-                          title: 'Open Source Licenses',
-                          subtitle: 'Flutter and package licenses',
+                          title: AppText.settingsTitleLicenses,
+                          subtitle: AppText.settingsSubtitleLicenses,
                           onTap: () {
                             showLicensePage(
                               context: context,
@@ -190,8 +191,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         _TelegramSettingsTile(
                           icon: Icons.logout_rounded,
                           iconBackground: AppColors.error,
-                          title: 'Log Out',
-                          subtitle: 'Remove session from this device',
+                          title: AppText.settingsTitleLogOut,
+                          subtitle: AppText.settingsSubtitleLogOut,
                           titleColor: AppColors.error,
                           onTap: () => _showLogoutDialog(context, ref),
                         ),
@@ -253,9 +254,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Log Out'),
+        title: const Text(AppText.logOutDialogTitle),
         content: const Text(
-          'Are you sure you want to log out? Your session will be removed from this device.',
+          AppText.logOutDialogContent,
         ),
         actionsAlignment: MainAxisAlignment.end,
         actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
@@ -264,10 +265,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             style: TextButton.styleFrom(
               foregroundColor: isDark
                   ? Colors.white
-                  : Colors.black, // cancel button text color
+                  : Colors.black,
             ),
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: const Text(AppText.cancel),
           ),
           const SizedBox(width: 8),
           ElevatedButton(
@@ -285,7 +286,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 context.go(AppRoutes.welcome);
               }
             },
-            child: const Text('Log Out'),
+            child: const Text(AppText.logOutConfirm),
           ),
         ],
       ),
@@ -297,9 +298,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Clear Local Session'),
+        title: const Text(AppText.clearSessionDialogTitle),
         content: const Text(
-          'This will remove your local session data. You will need to log in again.',
+          AppText.clearSessionDialogContent,
         ),
         actionsAlignment: MainAxisAlignment.end,
         actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
@@ -308,10 +309,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             style: TextButton.styleFrom(
               foregroundColor: isDark
                   ? Colors.white
-                  : Colors.black, // cancel button text color
+                  : Colors.black,
             ),
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: const Text(AppText.cancel),
           ),
           const SizedBox(width: 8),
           ElevatedButton(
@@ -328,7 +329,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               Navigator.pop(context);
               context.go(AppRoutes.welcome);
             },
-            child: const Text('Clear'),
+            child: const Text(AppText.clearSessionConfirm),
           ),
         ],
       ),

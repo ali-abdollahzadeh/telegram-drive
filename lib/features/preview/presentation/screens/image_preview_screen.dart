@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:share_plus/share_plus.dart';
+import '../../../../core/constants/app_text.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../drive/domain/entities/drive_file.dart';
 import '../../../drive/presentation/providers/drive_provider.dart';
@@ -27,12 +28,12 @@ class _ImagePreviewScreenState extends ConsumerState<ImagePreviewScreen> {
       if (!mounted) return;
       setState(() => _downloadedPath = path);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Image downloaded.')),
+        const SnackBar(content: Text(AppText.imageDownloaded)),
       );
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Download failed: $e')),
+        SnackBar(content: Text('${AppText.downloadFailed}$e')),
       );
     } finally {
       if (mounted) setState(() => _isDownloading = false);
@@ -43,7 +44,7 @@ class _ImagePreviewScreenState extends ConsumerState<ImagePreviewScreen> {
     final path = _downloadedPath ?? file.localPath;
     if (path == null || path.isEmpty || !File(path).existsSync()) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Download first, then share.')),
+        const SnackBar(content: Text(AppText.downloadFirst)),
       );
       return;
     }
@@ -61,7 +62,7 @@ class _ImagePreviewScreenState extends ConsumerState<ImagePreviewScreen> {
         backgroundColor: Colors.black,
         iconTheme: const IconThemeData(color: Colors.white),
         title: Text(
-          file?.name ?? 'Image Preview',
+          file?.name ?? AppText.imagePreview,
           style: const TextStyle(color: Colors.white, fontSize: 16),
           overflow: TextOverflow.ellipsis,
         ),
@@ -80,7 +81,7 @@ class _ImagePreviewScreenState extends ConsumerState<ImagePreviewScreen> {
       ),
       body: Center(
         child: file == null
-            ? const Text('Image not found', style: TextStyle(color: Colors.white))
+            ? const Text(AppText.imageNotFound, style: TextStyle(color: Colors.white))
             : _buildImageBody(file),
       ),
     );
@@ -101,14 +102,14 @@ class _ImagePreviewScreenState extends ConsumerState<ImagePreviewScreen> {
           ),
           const SizedBox(height: 8),
           const Text(
-            'Download this image first, then tap Open in App.',
+            AppText.downloadImageFirst,
             style: TextStyle(color: Colors.white38, fontSize: 13),
           ),
           const SizedBox(height: 24),
           ElevatedButton.icon(
             onPressed: _isDownloading ? null : () => _download(file),
             icon: Icon(_isDownloading ? Icons.downloading_rounded : Icons.download_rounded),
-            label: Text(_isDownloading ? 'Downloading...' : 'Download'),
+            label: Text(_isDownloading ? AppText.downloading : AppText.download),
           ),
         ],
       );

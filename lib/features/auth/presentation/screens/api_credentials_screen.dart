@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/constants/app_text.dart';
 import '../../../../core/routing/app_router.dart';
 import '../providers/auth_provider.dart';
 import '../widgets/auth_text_field.dart';
@@ -65,7 +66,7 @@ class _ApiCredentialsScreenState extends ConsumerState<ApiCredentialsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Connect Account'),
+        title: const Text(AppText.connectAccount),
         leading: BackButton(onPressed: () => context.pop()),
       ),
       body: SingleChildScrollView(
@@ -77,7 +78,7 @@ class _ApiCredentialsScreenState extends ConsumerState<ApiCredentialsScreen> {
             children: [
               const SizedBox(height: 8),
               Text(
-                'Enter your Telegram API credentials',
+                AppText.enterApiCredentials,
                 style: Theme.of(context).textTheme.headlineSmall,
               ),
               const SizedBox(height: 8),
@@ -85,9 +86,9 @@ class _ApiCredentialsScreenState extends ConsumerState<ApiCredentialsScreen> {
                 text: TextSpan(
                   style: Theme.of(context).textTheme.bodyMedium,
                   children: [
-                    const TextSpan(text: 'Get your API ID and Hash from '),
+                    const TextSpan(text: AppText.getApiIdFrom),
                     TextSpan(
-                      text: 'my.telegram.org',
+                      text: AppText.myTelegramOrg,
                       style: const TextStyle(color: AppColors.primary, decoration: TextDecoration.underline),
                       recognizer: TapGestureRecognizer()
                         ..onTap = () => launchUrl(Uri.parse(AppConstants.telegramHelpUrl)),
@@ -99,13 +100,13 @@ class _ApiCredentialsScreenState extends ConsumerState<ApiCredentialsScreen> {
 
               AuthTextField(
                 controller: _apiIdCtrl,
-                label: 'API ID',
-                hint: 'e.g. 12345678',
+                label: AppText.apiId,
+                hint: AppText.apiIdHint,
                 icon: Icons.vpn_key_rounded,
                 keyboardType: TextInputType.number,
                 validator: (v) {
-                  if (v == null || v.trim().isEmpty) return 'API ID is required';
-                  if (int.tryParse(v.trim()) == null) return 'API ID must be a number';
+                  if (v == null || v.trim().isEmpty) return AppText.apiIdRequired;
+                  if (int.tryParse(v.trim()) == null) return AppText.apiIdMustBeNumber;
                   return null;
                 },
               ),
@@ -113,12 +114,12 @@ class _ApiCredentialsScreenState extends ConsumerState<ApiCredentialsScreen> {
 
               AuthTextField(
                 controller: _apiHashCtrl,
-                label: 'API Hash',
-                hint: 'e.g. a1b2c3d4e5f6...',
+                label: AppText.apiHash,
+                hint: AppText.apiHashHint,
                 icon: Icons.tag_rounded,
                 validator: (v) {
-                  if (v == null || v.trim().isEmpty) return 'API Hash is required';
-                  if (v.trim().length < 16) return 'API Hash seems too short';
+                  if (v == null || v.trim().isEmpty) return AppText.apiHashRequired;
+                  if (v.trim().length < 16) return AppText.apiHashTooShort;
                   return null;
                 },
               ),
@@ -126,13 +127,13 @@ class _ApiCredentialsScreenState extends ConsumerState<ApiCredentialsScreen> {
 
               AuthTextField(
                 controller: _phoneCtrl,
-                label: 'Phone Number',
-                hint: '+1 234 567 8900',
+                label: AppText.phoneNumber,
+                hint: AppText.phoneNumberHint,
                 icon: Icons.phone_rounded,
                 keyboardType: TextInputType.phone,
                 validator: (v) {
-                  if (v == null || v.trim().isEmpty) return 'Phone number is required';
-                  if (v.trim().length < 8) return 'Enter a valid phone number with country code';
+                  if (v == null || v.trim().isEmpty) return AppText.phoneNumberRequired;
+                  if (v.trim().length < 8) return AppText.phoneNumberInvalid;
                   return null;
                 },
               ),
@@ -146,7 +147,7 @@ class _ApiCredentialsScreenState extends ConsumerState<ApiCredentialsScreen> {
                         height: 22,
                         child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white),
                       )
-                    : const Text('Continue'),
+                    : const Text(AppText.continueButton),
               ),
 
               const SizedBox(height: 24),
@@ -176,7 +177,7 @@ class _InfoCard extends StatelessWidget {
           const SizedBox(width: 12),
           Expanded(
             child: Text(
-              'Your credentials are stored only on your device. They never leave your phone.',
+              AppText.credentialsStoredOnDevice,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.primary),
             ),
           ),

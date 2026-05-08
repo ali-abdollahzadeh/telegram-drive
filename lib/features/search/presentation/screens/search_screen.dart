@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/constants/app_text.dart';
 import '../../../../core/widgets/common_widgets.dart';
 import '../../../drive/domain/entities/drive_file.dart';
 import '../../../drive/presentation/providers/drive_provider.dart';
@@ -66,7 +67,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
           controller: _searchCtrl,
           autofocus: true,
           decoration: InputDecoration(
-            hintText: 'Search files...',
+            hintText: AppText.searchHint,
             border: InputBorder.none,
             enabledBorder: InputBorder.none,
             focusedBorder: InputBorder.none,
@@ -96,14 +97,14 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
             child: query.isEmpty && results.isEmpty
                 ? const EmptyState(
                     icon: Icons.search_rounded,
-                    title: 'Search your files',
-                    subtitle: 'Type to search across all your Telegram Drive files',
+                    title: AppText.searchYourFiles,
+                    subtitle: AppText.searchSubtitle,
                   )
                 : results.isEmpty
                     ? const EmptyState(
                         icon: Icons.search_off_rounded,
-                        title: 'No results found',
-                        subtitle: 'Try a different search term or filter',
+                        title: AppText.noResultsFound,
+                        subtitle: AppText.noResultsSubtitle,
                       )
                     : ListView.builder(
                         itemCount: results.length,

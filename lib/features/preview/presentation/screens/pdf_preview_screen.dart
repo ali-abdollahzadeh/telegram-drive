@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'package:share_plus/share_plus.dart';
 import 'dart:io';
+import '../../../../core/constants/app_text.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../drive/domain/entities/drive_file.dart';
 import '../../../drive/presentation/providers/drive_provider.dart';
@@ -29,12 +30,12 @@ class _PdfPreviewScreenState extends ConsumerState<PdfPreviewScreen> {
       if (!mounted) return;
       setState(() => _downloadedPath = path);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('PDF downloaded.')),
+        const SnackBar(content: Text(AppText.pdfDownloaded)),
       );
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Download failed: $e')),
+        SnackBar(content: Text('${AppText.downloadFailed}$e')),
       );
     } finally {
       if (mounted) setState(() => _isDownloading = false);
@@ -45,7 +46,7 @@ class _PdfPreviewScreenState extends ConsumerState<PdfPreviewScreen> {
     final path = _downloadedPath ?? file.localPath;
     if (path == null || path.isEmpty || !File(path).existsSync()) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Download first, then share.')),
+        const SnackBar(content: Text(AppText.downloadFirst)),
       );
       return;
     }
@@ -61,7 +62,7 @@ class _PdfPreviewScreenState extends ConsumerState<PdfPreviewScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(file?.name ?? 'PDF Viewer', overflow: TextOverflow.ellipsis),
+        title: Text(file?.name ?? AppText.pdfViewer, overflow: TextOverflow.ellipsis),
         actions: [
           IconButton(
             icon: Icon(_isDownloading ? Icons.downloading_rounded : Icons.download_rounded),
@@ -73,7 +74,7 @@ class _PdfPreviewScreenState extends ConsumerState<PdfPreviewScreen> {
           ),
         ],
       ),
-      body: file == null ? const Center(child: Text('PDF file not found')) : _buildPdfBody(context, file),
+      body: file == null ? const Center(child: Text(AppText.pdfNotFound)) : _buildPdfBody(context, file),
     );
   }
 
@@ -103,7 +104,7 @@ class _PdfPreviewScreenState extends ConsumerState<PdfPreviewScreen> {
               ),
               const SizedBox(height: 8),
               Text(
-                'Download this PDF first, then tap Open in App.',
+                AppText.downloadPdfFirst,
                 style: Theme.of(context).textTheme.bodyMedium,
                 textAlign: TextAlign.center,
               ),
@@ -111,7 +112,7 @@ class _PdfPreviewScreenState extends ConsumerState<PdfPreviewScreen> {
               ElevatedButton.icon(
                 onPressed: _isDownloading ? null : () => _download(file),
                 icon: Icon(_isDownloading ? Icons.downloading_rounded : Icons.download_rounded),
-                label: Text(_isDownloading ? 'Downloading...' : 'Download'),
+                label: Text(_isDownloading ? AppText.downloading : AppText.download),
               ),
             ],
           ),

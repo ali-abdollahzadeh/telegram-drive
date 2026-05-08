@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/constants/app_text.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/file_utils.dart';
 import '../../domain/entities/drive_file.dart';
@@ -106,11 +107,11 @@ class FileListItem extends StatelessWidget {
                     if (v == 'delete') onDelete();
                   },
                   itemBuilder: (_) => const [
-                    PopupMenuItem(value: 'download', child: Text('Download')),
-                    PopupMenuItem(value: 'share', child: Text('Share')),
+                    PopupMenuItem(value: 'download', child: Text(AppText.download)),
+                    PopupMenuItem(value: 'share', child: Text(AppText.share)),
                     PopupMenuItem(
                       value: 'delete',
-                      child: Text('Delete', style: TextStyle(color: AppColors.error)),
+                      child: Text(AppText.delete, style: TextStyle(color: AppColors.error)),
                     ),
                   ],
                 ),

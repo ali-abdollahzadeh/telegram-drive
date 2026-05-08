@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/constants/app_text.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../providers/drive_provider.dart';
 
@@ -26,7 +27,7 @@ class UploadProgressCard extends StatelessWidget {
               const Icon(Icons.cloud_upload_rounded, color: AppColors.primary, size: 18),
               const SizedBox(width: 8),
               Text(
-                'Uploading ${active.length} file(s)...',
+                '${AppText.uploadingN} ${active.length} ${AppText.uploadingFilesSuffix}',
                 style: Theme.of(context).textTheme.labelLarge?.copyWith(color: AppColors.primary),
               ),
             ],

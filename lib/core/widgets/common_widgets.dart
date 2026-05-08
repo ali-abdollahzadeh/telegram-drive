@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../constants/app_text.dart';
 import '../theme/app_colors.dart';
 
 class LoadingView extends StatelessWidget {
@@ -58,7 +59,7 @@ class ErrorView extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              'Something went wrong',
+              AppText.somethingWentWrong,
               style: Theme.of(context).textTheme.titleMedium,
               textAlign: TextAlign.center,
             ),
@@ -73,7 +74,7 @@ class ErrorView extends StatelessWidget {
               ElevatedButton.icon(
                 onPressed: onRetry,
                 icon: const Icon(Icons.refresh_rounded),
-                label: const Text('Try Again'),
+                label: const Text(AppText.tryAgain),
                 style: ElevatedButton.styleFrom(minimumSize: const Size(160, 48)),
               ),
             ],

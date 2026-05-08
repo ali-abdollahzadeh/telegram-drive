@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/constants/app_text.dart';
 
 class PrivacyPolicyScreen extends StatelessWidget {
   const PrivacyPolicyScreen({super.key});
@@ -27,7 +28,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
           },
         ),
         title: Text(
-          'Privacy Policy',
+          AppText.privacyPolicyTitle,
           style: TextStyle(
             color: isDark ? Colors.white : Colors.black,
             fontWeight: FontWeight.w600,
@@ -54,7 +55,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 24),
                 Text(
-                  'Our Commitment to Privacy',
+                  AppText.privacyCommitmentHeading,
                   style: TextStyle(
                     color: isDark ? Colors.white : Colors.black,
                     fontSize: 22,
@@ -64,7 +65,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'This project is completely free and open-source. We built this app exactly how a privacy policy should be: simple, honest, and completely respectful of your data.',
+                  AppText.privacyCommitmentBody,
                   style: TextStyle(
                     color: isDark ? Colors.white70 : Colors.black87,
                     fontSize: 16,
@@ -73,29 +74,29 @@ class PrivacyPolicyScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 24),
                 _PolicySection(
-                  title: 'Zero Data Collection',
-                  description: 'We do not save, collect, or transmit any of your personal information. Everything remains on your device.',
+                  title: AppText.privacySection1Title,
+                  description: AppText.privacySection1Body,
                   icon: Icons.no_accounts_rounded,
                   isDark: isDark,
                 ),
                 const SizedBox(height: 20),
                 _PolicySection(
-                  title: 'Only Your Device',
-                  description: 'All your files, sessions, and data are stored entirely on your local phone storage and your personal Telegram cloud. We do not have any servers to store your data.',
+                  title: AppText.privacySection2Title,
+                  description: AppText.privacySection2Body,
                   icon: Icons.smartphone_rounded,
                   isDark: isDark,
                 ),
                 const SizedBox(height: 20),
                 _PolicySection(
-                  title: '100% Free',
-                  description: 'This is a free project. There are no hidden fees, no trackers, and absolutely no ads.',
+                  title: AppText.privacySection3Title,
+                  description: AppText.privacySection3Body,
                   icon: Icons.money_off_rounded,
                   isDark: isDark,
                 ),
                 const SizedBox(height: 32),
                 Center(
                   child: Text(
-                    'Last updated: May 2026',
+                    AppText.privacyLastUpdated,
                     style: TextStyle(
                       color: isDark ? Colors.white38 : Colors.black45,
                       fontSize: 14,

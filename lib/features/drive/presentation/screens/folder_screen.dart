@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
 import 'dart:io';
+import '../../../../core/constants/app_text.dart';
 import '../../../../core/widgets/common_widgets.dart';
 import '../../domain/entities/drive_file.dart';
 import '../providers/drive_provider.dart';
@@ -46,12 +47,12 @@ class _FolderScreenState extends ConsumerState<FolderScreen> {
         ],
       ),
       body: driveState.isLoadingFiles
-          ? const LoadingView(message: 'Loading files...')
+          ? const LoadingView(message: AppText.loadingFiles)
           : files.isEmpty
               ? EmptyState(
                   icon: Icons.folder_open_rounded,
-                  title: 'Folder is empty',
-                  subtitle: 'Upload files to ${widget.folderName}',
+                  title: AppText.folderIsEmpty,
+                  subtitle: '${AppText.uploadFilesToFolder}${widget.folderName}',
                 )
               : driveState.viewMode == ViewMode.grid
                   ? Padding(
@@ -97,12 +98,12 @@ class _FolderScreenState extends ConsumerState<FolderScreen> {
       await ref.read(driveRepositoryProvider).downloadFile(file: file);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${file.name} downloaded')),
+        SnackBar(content: Text('${file.name} ${AppText.downloadedSnack}')),
       );
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Download failed: $e')),
+        SnackBar(content: Text('${AppText.downloadFailed}$e')),
       );
     }
   }
@@ -115,7 +116,7 @@ class _FolderScreenState extends ConsumerState<FolderScreen> {
       } catch (e) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Share failed: $e')),
+          SnackBar(content: Text('${AppText.shareFailed}$e')),
         );
         return;
       }

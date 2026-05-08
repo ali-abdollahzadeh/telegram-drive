@@ -4,6 +4,7 @@ import 'package:chewie/chewie.dart';
 import 'package:video_player/video_player.dart';
 import 'package:share_plus/share_plus.dart';
 import 'dart:io';
+import '../../../../core/constants/app_text.dart';
 import '../../../drive/presentation/providers/drive_provider.dart';
 
 class VideoPreviewScreen extends ConsumerStatefulWidget {
@@ -29,10 +30,10 @@ class _VideoPreviewScreenState extends ConsumerState<VideoPreviewScreen> {
       await _initPlayer(path);
       if (!mounted) return;
       setState(() => _downloadedPath = path);
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Video downloaded.')));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text(AppText.videoDownloaded)));
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Download failed: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${AppText.downloadFailed}$e')));
     } finally {
       if (mounted) setState(() => _isDownloading = false);
     }
@@ -43,7 +44,7 @@ class _VideoPreviewScreenState extends ConsumerState<VideoPreviewScreen> {
     if (file == null) return;
     final path = _downloadedPath ?? file.localPath;
     if (path == null || path.isEmpty || !File(path).existsSync()) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Download first, then share.')));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text(AppText.downloadFirst)));
       return;
     }
     await SharePlus.instance.share(ShareParams(files: [XFile(path)], text: file.name));
@@ -93,7 +94,7 @@ class _VideoPreviewScreenState extends ConsumerState<VideoPreviewScreen> {
         backgroundColor: Colors.black,
         iconTheme: const IconThemeData(color: Colors.white),
         title: Text(
-          file?.name ?? 'Video Preview',
+          file?.name ?? AppText.videoPreview,
           style: const TextStyle(color: Colors.white, fontSize: 16),
           overflow: TextOverflow.ellipsis,
         ),
@@ -126,14 +127,14 @@ class _VideoPreviewScreenState extends ConsumerState<VideoPreviewScreen> {
             ),
             const SizedBox(height: 8),
             const Text(
-              'Download the file to play video',
+              AppText.downloadToPlayVideo,
               style: TextStyle(color: Colors.white38, fontSize: 13),
             ),
             const SizedBox(height: 24),
             ElevatedButton.icon(
               onPressed: _isDownloading ? null : _download,
               icon: Icon(_isDownloading ? Icons.downloading_rounded : Icons.download_rounded),
-              label: Text(_isDownloading ? 'Downloading...' : 'Download to Play'),
+              label: Text(_isDownloading ? AppText.downloading : AppText.downloadToPlay),
             ),
           ],
         ),

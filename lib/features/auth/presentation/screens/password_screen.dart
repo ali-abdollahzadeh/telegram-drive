@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/constants/app_text.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/routing/app_router.dart';
 import '../providers/auth_provider.dart';
@@ -48,7 +49,7 @@ class _PasswordScreenState extends ConsumerState<PasswordScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Two-Step Verification'),
+        title: const Text(AppText.twoStepVerification),
         leading: BackButton(onPressed: () => context.pop()),
       ),
       body: Padding(
@@ -68,18 +69,18 @@ class _PasswordScreenState extends ConsumerState<PasswordScreen> {
                   color: AppColors.warning, size: 30),
             ),
             const SizedBox(height: 20),
-            Text('2-Step verification enabled',
+            Text(AppText.twoStepEnabled,
                 style: Theme.of(context).textTheme.headlineSmall),
             const SizedBox(height: 8),
             Text(
-              'Enter your Telegram two-step verification password to continue.',
+              AppText.enterTwoStepPassword,
               style: Theme.of(context).textTheme.bodyMedium,
             ),
             const SizedBox(height: 32),
             AuthTextField(
               controller: _passCtrl,
-              label: 'Password',
-              hint: '••••••••',
+              label: AppText.password,
+              hint: AppText.passwordHint,
               icon: Icons.lock_outline_rounded,
               obscureText: _obscure,
               autofocus: true,
@@ -101,7 +102,7 @@ class _PasswordScreenState extends ConsumerState<PasswordScreen> {
                       child: CircularProgressIndicator(
                           strokeWidth: 2.5, color: Colors.white),
                     )
-                  : const Text('Verify Password'),
+                  : const Text(AppText.verifyPassword),
             ),
           ],
         ),

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:share_plus/share_plus.dart';
 import 'dart:io';
+import '../../../../core/constants/app_text.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../drive/presentation/providers/drive_provider.dart';
 
@@ -61,10 +62,10 @@ class _AudioPreviewScreenState extends ConsumerState<AudioPreviewScreen> {
       setState(() => _downloadedPath = path);
       await _player.setFilePath(path);
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Audio downloaded.')));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text(AppText.audioDownloaded)));
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Download failed: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${AppText.downloadFailed}$e')));
     } finally {
       if (mounted) setState(() => _isDownloading = false);
     }
@@ -76,7 +77,7 @@ class _AudioPreviewScreenState extends ConsumerState<AudioPreviewScreen> {
     final path = _downloadedPath ?? file.localPath;
     if (path == null || path.isEmpty || !File(path).existsSync()) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Download first, then share.')),
+        const SnackBar(content: Text(AppText.downloadFirst)),
       );
       return;
     }
@@ -96,7 +97,7 @@ class _AudioPreviewScreenState extends ConsumerState<AudioPreviewScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(file?.name ?? 'Audio Player', overflow: TextOverflow.ellipsis),
+        title: Text(file?.name ?? AppText.audioPlayer, overflow: TextOverflow.ellipsis),
         actions: [
           IconButton(
             icon: Icon(_isDownloading ? Icons.downloading_rounded : Icons.download_rounded),
@@ -137,7 +138,7 @@ class _AudioPreviewScreenState extends ConsumerState<AudioPreviewScreen> {
               maxLines: 2,
             ),
             const SizedBox(height: 8),
-            Text('Audio File', style: Theme.of(context).textTheme.bodyMedium),
+            Text('${AppText.audioFile}', style: Theme.of(context).textTheme.bodyMedium),
             const SizedBox(height: 32),
             // Progress
             SliderTheme(
@@ -212,7 +213,7 @@ class _AudioPreviewScreenState extends ConsumerState<AudioPreviewScreen> {
             ),
             const SizedBox(height: 20),
             if (_isDownloading)
-              const Text('Downloading...', style: TextStyle(color: AppColors.primary)),
+              const Text(AppText.downloadingLabel, style: TextStyle(color: AppColors.primary)),
           ],
         ),
       ),

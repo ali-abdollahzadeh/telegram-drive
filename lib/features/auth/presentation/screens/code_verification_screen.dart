@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/constants/app_text.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/routing/app_router.dart';
 import '../providers/auth_provider.dart';
@@ -43,7 +44,7 @@ class _CodeVerificationScreenState extends ConsumerState<CodeVerificationScreen>
   Future<void> _verify() async {
     if (_codeCtrl.text.trim().length < 5) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter the full verification code')),
+        const SnackBar(content: Text(AppText.pleaseEnterFullCode)),
       );
       return;
     }
@@ -83,7 +84,7 @@ class _CodeVerificationScreenState extends ConsumerState<CodeVerificationScreen>
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Verify Code'),
+        title: const Text(AppText.verifyCode),
         leading: BackButton(onPressed: () => context.pop()),
       ),
       body: Padding(
@@ -93,20 +94,20 @@ class _CodeVerificationScreenState extends ConsumerState<CodeVerificationScreen>
           children: [
             const SizedBox(height: 8),
             Text(
-              'Enter verification code',
+              AppText.enterVerificationCode,
               style: Theme.of(context).textTheme.headlineSmall,
             ),
             const SizedBox(height: 8),
             Text(
-              'We sent a code to ${widget.phoneNumber}',
+              '${AppText.codeSentTo}${widget.phoneNumber}',
               style: Theme.of(context).textTheme.bodyMedium,
             ),
             const SizedBox(height: 40),
 
             AuthTextField(
               controller: _codeCtrl,
-              label: 'Verification Code',
-              hint: '12345',
+              label: AppText.verificationCode,
+              hint: AppText.verificationCodeHint,
               icon: Icons.verified_rounded,
               keyboardType: TextInputType.number,
               autofocus: true,
@@ -118,7 +119,7 @@ class _CodeVerificationScreenState extends ConsumerState<CodeVerificationScreen>
             Row(
               children: [
                 Text(
-                  _canResend ? 'Didn\'t receive code?' : 'Resend in ${_countdown}s',
+                  _canResend ? AppText.didntReceiveCode : '${AppText.resendIn}${_countdown}s',
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
                 if (_canResend) ...[
@@ -132,7 +133,7 @@ class _CodeVerificationScreenState extends ConsumerState<CodeVerificationScreen>
                       _startCountdown();
                     },
                     style: TextButton.styleFrom(padding: EdgeInsets.zero, minimumSize: Size.zero),
-                    child: const Text('Resend'),
+                    child: const Text(AppText.resend),
                   ),
                 ],
               ],
@@ -147,7 +148,7 @@ class _CodeVerificationScreenState extends ConsumerState<CodeVerificationScreen>
                       height: 22,
                       child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white),
                     )
-                  : const Text('Verify'),
+                  : const Text(AppText.verify),
             ),
           ],
         ),

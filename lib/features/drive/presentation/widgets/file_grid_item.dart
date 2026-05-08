@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/constants/app_text.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/file_utils.dart';
 import '../../domain/entities/drive_file.dart';
@@ -162,7 +163,7 @@ class FileGridItem extends StatelessWidget {
           const SizedBox(height: 8),
           ListTile(
             leading: const Icon(Icons.download_rounded),
-            title: const Text('Download'),
+            title: const Text(AppText.download),
             onTap: () {
               Navigator.pop(context);
               onDownload?.call();
@@ -170,7 +171,7 @@ class FileGridItem extends StatelessWidget {
           ),
           ListTile(
             leading: const Icon(Icons.share_rounded),
-            title: const Text('Share'),
+            title: const Text(AppText.share),
             onTap: () {
               Navigator.pop(context);
               onShare?.call();
@@ -180,7 +181,7 @@ class FileGridItem extends StatelessWidget {
             leading: const Icon(Icons.delete_outline_rounded,
                 color: AppColors.error),
             title:
-                const Text('Delete', style: TextStyle(color: AppColors.error)),
+                const Text(AppText.delete, style: TextStyle(color: AppColors.error)),
             onTap: () {
               Navigator.pop(context);
               onDelete();
