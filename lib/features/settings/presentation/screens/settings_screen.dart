@@ -1,12 +1,16 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../core/theme/app_colors.dart';
+import 'package:go_router/go_router.dart';
+import 'package:file_picker/file_picker.dart';
+
 import '../../../../core/constants/app_constants.dart';
+import '../../../../services/platform/native_telegram_channel.dart';
 import '../../../../core/routing/app_router.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../providers/settings_provider.dart';
-import 'package:go_router/go_router.dart';
-import 'package:local_auth/local_auth.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -16,204 +20,272 @@ class SettingsScreen extends ConsumerStatefulWidget {
 }
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
-  final LocalAuthentication _auth = LocalAuthentication();
-
   @override
   Widget build(BuildContext context) {
     final themeMode = ref.watch(themeModeProvider);
     final viewMode = ref.watch(defaultViewModeProvider);
     final userProfileAsync = ref.watch(userProfileProvider);
-    final biometricsEnabled = ref.watch(biometricsEnabledProvider);
+    final downloadLocation = ref.watch(downloadLocationProvider);
+
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Settings')),
-      body: ListView(
-        children: [
-          // Account Section
-          const _SectionHeader('Account'),
-          userProfileAsync.when(
-            data: (profile) => _SettingsTile(
-              icon: Icons.phone_rounded,
-              title: profile['firstName'] != null 
-                  ? '${profile['firstName']} ${profile['lastName'] ?? ''}'.trim() 
-                  : 'Phone Number',
-              subtitle: profile['phoneNumber'] != null ? '+${profile['phoneNumber']}' : 'Loading...',
-              trailing: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: AppColors.success.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Text(
-                  'Connected',
-                  style: TextStyle(color: AppColors.success, fontSize: 12, fontWeight: FontWeight.w600),
+      backgroundColor: isDark ? Colors.black : const Color(0xFFF2F2F7),
+      body: SafeArea(
+        child: Stack(
+          children: [
+            userProfileAsync.when(
+              data: (profile) {
+                final firstName = profile['firstName'] as String?;
+                final lastName = profile['lastName'] as String?;
+                final phoneNumber = profile['phoneNumber'] as String?;
+                final username = profile['username'] as String?;
+                final photoPath = profile['photoPath'] as String?;
+
+                final fullName = '${firstName ?? ''} ${lastName ?? ''}'.trim();
+                final displayName =
+                    fullName.isNotEmpty ? fullName : 'Telegram User';
+
+                final phoneText = phoneNumber != null && phoneNumber.isNotEmpty
+                    ? '+$phoneNumber'
+                    : '';
+
+                final usernameText =
+                    username != null && username.isNotEmpty ? '@$username' : '';
+
+                final subtitle = phoneText.isNotEmpty && usernameText.isNotEmpty
+                    ? '$phoneText • $usernameText'
+                    : phoneText.isNotEmpty
+                        ? phoneText
+                        : usernameText;
+
+                return ListView(
+                  padding: const EdgeInsets.fromLTRB(12, 50, 12, 120),
+                  children: [
+                    _ProfileHeader(
+                      name: displayName,
+                      subtitle: subtitle,
+                      imagePath: photoPath,
+                    ),
+                    const SizedBox(height: 32),
+                    _SettingsCard(
+                      children: [
+                        _TelegramSettingsTile(
+                          icon: Icons.laptop_mac,
+                          iconBackground: const Color(0xFFFFA000),
+                          title: 'Theme',
+                          subtitle: 'Choose your theme',
+                          trailing: DropdownButtonHideUnderline(
+                            child: DropdownButton<ThemeMode>(
+                              value: themeMode,
+                              dropdownColor: isDark
+                                  ? const Color(0xFF1C1C1E)
+                                  : Colors.white,
+                              style: TextStyle(
+                                  color: isDark ? Colors.white : Colors.black),
+                              iconEnabledColor:
+                                  isDark ? Colors.white54 : Colors.black54,
+                              onChanged: (value) async {
+                                if (value == null) return;
+
+                                ref.read(themeModeProvider.notifier).state =
+                                    value;
+                                await SettingsService.saveTheme(value);
+                              },
+                              items: const [
+                                DropdownMenuItem(
+                                  value: ThemeMode.system,
+                                  child: Text('System'),
+                                ),
+                                DropdownMenuItem(
+                                  value: ThemeMode.dark,
+                                  child: Text('Dark'),
+                                ),
+                                DropdownMenuItem(
+                                  value: ThemeMode.light,
+                                  child: Text('Light'),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        _TelegramSettingsTile(
+                          icon: Icons.lock_rounded,
+                          iconBackground: const Color(0xFF31C754),
+                          title: 'Privacy & Security',
+                          subtitle: 'Session, Devices, Local Data',
+                          onTap: () => _showClearSessionDialog(context, ref),
+                        ),
+                        _TelegramSettingsTile(
+                          icon: Icons.storage_rounded,
+                          iconBackground: const Color(0xFF4A74F5),
+                          title: 'Data and Storage',
+                          subtitle: 'Clear TDLib cache',
+                          onTap: () async {
+                            try {
+                              await NativeTelegramChannel.optimizeStorage();
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Cache cleared successfully'),
+                                  ),
+                                );
+                              }
+                            } catch (e) {
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('Error: $e')),
+                                );
+                              }
+                            }
+                          },
+                        ),
+                        _TelegramSettingsTile(
+                          icon: Icons.folder_rounded,
+                          iconBackground: const Color(0xFF22AEEA),
+                          title: 'Download Location',
+                          subtitle: downloadLocation,
+                          onTap: () async {
+                            final result =
+                                await FilePicker.platform.getDirectoryPath();
+                            if (result != null) {
+                              ref
+                                  .read(downloadLocationProvider.notifier)
+                                  .state = result;
+                              await SettingsService.saveDownloadLocation(
+                                  result);
+                            }
+                          },
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    _SettingsCard(
+                      children: [
+                        _TelegramSettingsTile(
+                          icon: Icons.privacy_tip_rounded,
+                          iconBackground: const Color(0xFFB8860B),
+                          title: 'Privacy Policy',
+                          subtitle: 'All data stays on your device',
+                          onTap: () {
+                            context.push(AppRoutes.privacyPolicy);
+                          },
+                        ),
+                        _TelegramSettingsTile(
+                          icon: Icons.code_rounded,
+                          iconBackground: const Color(0xFF64748B),
+                          title: 'Open Source Licenses',
+                          subtitle: 'Flutter and package licenses',
+                          onTap: () {
+                            showLicensePage(
+                              context: context,
+                              applicationName: AppConstants.appName,
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    _SettingsCard(
+                      children: [
+                        _TelegramSettingsTile(
+                          icon: Icons.logout_rounded,
+                          iconBackground: AppColors.error,
+                          title: 'Log Out',
+                          subtitle: 'Remove session from this device',
+                          titleColor: AppColors.error,
+                          onTap: () => _showLogoutDialog(context, ref),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'TeleDrive for Android  v${AppConstants.appVersion}\n Telegram Database Library (TDLib) integrated',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: isDark ? Colors.white38 : Colors.black45,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                );
+              },
+              loading: () => const Center(
+                child: CircularProgressIndicator(),
+              ),
+              error: (e, st) => Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Text(
+                    'Error loading profile\n$e',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        color: isDark ? Colors.white70 : Colors.black87),
+                  ),
                 ),
               ),
             ),
-            loading: () => const Center(child: CircularProgressIndicator()),
-            error: (e, st) => _SettingsTile(icon: Icons.error, title: 'Error loading profile', subtitle: e.toString()),
-          ),
-          _SettingsTile(
-            icon: Icons.logout_rounded,
-            title: 'Log Out',
-            iconColor: AppColors.error,
-            onTap: () => _showLogoutDialog(context, ref),
-          ),
-          const Divider(height: 32),
-
-          // Storage Section
-          const _SectionHeader('Storage'),
-          const  _SettingsTile(
-            icon: Icons.storage_rounded,
-            title: 'Cache Size',
-            subtitle: '128 MB used',
-          ),
-          _SettingsTile(
-            icon: Icons.delete_sweep_rounded,
-            title: 'Clear Cache',
-            onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Cache cleared')),
+            Positioned(
+              top: 8,
+              left: 8,
+              child: IconButton(
+                icon: Icon(
+                  Icons.arrow_back_ios_new_rounded,
+                  color: isDark ? Colors.white : Colors.black,
+                ),
+                onPressed: () {
+                  if (context.canPop()) {
+                    context.pop();
+                  } else {
+                    context.go('/');
+                  }
+                },
+              ),
             ),
-          ),
-          const _SettingsTile(
-            icon: Icons.folder_open_rounded,
-            title: 'Download Location',
-            subtitle: '/storage/emulated/0/Download',
-          ),
-          const Divider(height: 32),
-
-          // Appearance Section
-          const _SectionHeader('Appearance'),
-          _SettingsTile(
-            icon: Icons.palette_rounded,
-            title: 'Theme',
-            trailing: DropdownButton<ThemeMode>(
-              value: themeMode,
-              underline: const SizedBox(),
-              onChanged: (v) => ref.read(themeModeProvider.notifier).state = v!,
-              items: const [
-                DropdownMenuItem(value: ThemeMode.system, child: Text('System')),
-                DropdownMenuItem(value: ThemeMode.dark, child: Text('Dark')),
-                DropdownMenuItem(value: ThemeMode.light, child: Text('Light')),
-              ],
-            ),
-          ),
-          _SettingsTile(
-            icon: Icons.grid_view_rounded,
-            title: 'Default View',
-            trailing: DropdownButton<String>(
-              value: viewMode,
-              underline: const SizedBox(),
-              onChanged: (v) => ref.read(defaultViewModeProvider.notifier).state = v!,
-              items: const [
-                DropdownMenuItem(value: 'grid', child: Text('Grid')),
-                DropdownMenuItem(value: 'list', child: Text('List')),
-              ],
-            ),
-          ),
-          const Divider(height: 32),
-
-          // Security Section
-          const _SectionHeader('Security'),
-          _SettingsTile(
-            icon: Icons.fingerprint_rounded,
-            title: 'Biometric Unlock',
-            trailing: Switch(
-              value: biometricsEnabled,
-              onChanged: (val) => _toggleBiometrics(val),
-              activeThumbColor: AppColors.primary,
-            ),
-          ),
-          _SettingsTile(
-            icon: Icons.app_blocking_rounded,
-            title: 'App Lock',
-            trailing: Switch(
-              value: false,
-              onChanged: (_) {},
-              activeThumbColor: AppColors.primary,
-            ),
-          ),
-          _SettingsTile(
-            icon: Icons.no_encryption_rounded,
-            title: 'Clear Local Session',
-            iconColor: AppColors.error,
-            onTap: () => _showClearSessionDialog(context, ref),
-          ),
-          const Divider(height: 32),
-
-          // About Section
-          const _SectionHeader('About'),
-          const _SettingsTile(
-            icon: Icons.info_outline_rounded,
-            title: 'App Version',
-            subtitle: '${AppConstants.appVersion} (TDLib Integrated)',
-          ),
-          const _SettingsTile(
-            icon: Icons.privacy_tip_rounded,
-            title: 'Privacy Policy',
-            subtitle: 'All data stays on your device',
-          ),
-          _SettingsTile(
-            icon: Icons.code_rounded,
-            title: 'Open Source Licenses',
-            onTap: () => showLicensePage(context: context, applicationName: AppConstants.appName),
-          ),
-          const SizedBox(height: 32),
-        ],
+          ],
+        ),
       ),
     );
   }
 
-  Future<void> _toggleBiometrics(bool newValue) async {
-    // try {
-    //   final canAuthenticateWithBiometrics = await _auth.canCheckBiometrics;
-    //   final canAuthenticate = canAuthenticateWithBiometrics || await _auth.isDeviceSupported();
-
-    //   if (!canAuthenticate) {
-    //     if (mounted) {
-    //       ScaffoldMessenger.of(context).showSnackBar(
-    //         const SnackBar(content: Text('Biometrics not supported on this device.')),
-    //       );
-    //     }
-    //     return;
-    //   }
-
-    //   final authenticated = await _auth.authenticate(
-    //     localizedReason: newValue ? 'Enable Biometric Unlock' : 'Disable Biometric Unlock',
-    //     options: const AuthenticationOptions(
-    //       stickyAuth: true,
-    //       biometricOnly: false,
-    //     ),
-    //   );
-
-    //   if (authenticated) {
-        ref.read(biometricsEnabledProvider.notifier).state = newValue;
-        await SettingsService.saveBiometricsEnabled(newValue);
-    //   }
-    // } catch (e) {
-    //   if (mounted) {
-    //     ScaffoldMessenger.of(context).showSnackBar(
-    //       SnackBar(content: Text('Error: $e')),
-    //     );
-    //   }
-    // }
-  }
-
   void _showLogoutDialog(BuildContext context, WidgetRef ref) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
         title: const Text('Log Out'),
-        content: const Text('Are you sure you want to log out? Your session will be removed from this device.'),
+        content: const Text(
+          'Are you sure you want to log out? Your session will be removed from this device.',
+        ),
+        actionsAlignment: MainAxisAlignment.end,
+        actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          TextButton(
+            style: TextButton.styleFrom(
+              foregroundColor: isDark
+                  ? Colors.white
+                  : Colors.black, // cancel button text color
+            ),
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          const SizedBox(width: 8),
           ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.error,
+              foregroundColor: Colors.white,
+              minimumSize: const Size(90, 40),
+            ),
             onPressed: () async {
               Navigator.pop(context);
+
               await ref.read(authProvider.notifier).logout();
-              if (context.mounted) context.go(AppRoutes.welcome);
+
+              if (context.mounted) {
+                context.go(AppRoutes.welcome);
+              }
             },
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
             child: const Text('Log Out'),
           ),
         ],
@@ -222,19 +294,41 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   void _showClearSessionDialog(BuildContext context, WidgetRef ref) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
         title: const Text('Clear Local Session'),
-        content: const Text('This will remove your local session data. You will need to log in again.'),
+        content: const Text(
+          'This will remove your local session data. You will need to log in again.',
+        ),
+        actionsAlignment: MainAxisAlignment.end,
+        actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          TextButton(
+            style: TextButton.styleFrom(
+              foregroundColor: isDark
+                  ? Colors.white
+                  : Colors.black, // cancel button text color
+            ),
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          const SizedBox(width: 8),
           ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+              minimumSize: const Size(90, 40),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 20,
+                vertical: 10,
+              ),
+            ),
             onPressed: () {
               Navigator.pop(context);
               context.go(AppRoutes.welcome);
             },
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
             child: const Text('Clear'),
           ),
         ],
@@ -243,59 +337,153 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 }
 
-class _SectionHeader extends StatelessWidget {
-  final String title;
-  const _SectionHeader(this.title);
+class _ProfileHeader extends StatelessWidget {
+  final String name;
+  final String subtitle;
+  final String? imagePath;
+
+  const _ProfileHeader({
+    required this.name,
+    required this.subtitle,
+    required this.imagePath,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
-      child: Text(
-        title.toUpperCase(),
-        style: Theme.of(context).textTheme.labelMedium?.copyWith(
-              color: AppColors.primary,
-              letterSpacing: 1.2,
+    final hasImage = imagePath != null && imagePath!.isNotEmpty;
+    final imageFile = hasImage ? File(imagePath!) : null;
+    final imageExists = imageFile != null && imageFile.existsSync();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Column(
+      children: [
+        Stack(
+          clipBehavior: Clip.none,
+          children: [
+            CircleAvatar(
+              radius: 58,
+              backgroundColor:
+                  isDark ? const Color(0xFF2C2C2E) : const Color(0xFFE5E5EA),
+              backgroundImage: imageExists ? FileImage(imageFile) : null,
+              child: imageExists
+                  ? null
+                  : Icon(
+                      Icons.person_rounded,
+                      size: 64,
+                      color: isDark ? Colors.white70 : Colors.black45,
+                    ),
             ),
+          ],
+        ),
+        const SizedBox(height: 18),
+        Text(
+          name,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: isDark ? Colors.white : Colors.black,
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
+            letterSpacing: -0.5,
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          subtitle,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: isDark ? Colors.white38 : Colors.black54,
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _SettingsCard extends StatelessWidget {
+  final List<Widget> children;
+
+  const _SettingsCard({
+    required this.children,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+        borderRadius: BorderRadius.circular(28),
+      ),
+      child: Column(
+        children: children,
       ),
     );
   }
 }
 
-class _SettingsTile extends StatelessWidget {
+class _TelegramSettingsTile extends StatelessWidget {
   final IconData icon;
+  final Color iconBackground;
   final String title;
-  final String? subtitle;
+  final String subtitle;
   final Widget? trailing;
   final VoidCallback? onTap;
-  final Color? iconColor;
+  final Color? titleColor;
 
-  const _SettingsTile({
+  const _TelegramSettingsTile({
     required this.icon,
+    required this.iconBackground,
     required this.title,
-    this.subtitle,
+    required this.subtitle,
     this.trailing,
     this.onTap,
-    this.iconColor,
+    this.titleColor,
   });
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return ListTile(
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: 15,
+        vertical: 0,
+      ),
       leading: Container(
-        width: 40,
-        height: 40,
+        width: 25,
+        height: 25,
         decoration: BoxDecoration(
-          color: (iconColor ?? AppColors.primary).withValues(alpha: 0.1),
+          color: iconBackground,
           borderRadius: BorderRadius.circular(10),
         ),
-        child: Icon(icon, color: iconColor ?? AppColors.primary, size: 20),
+        child: Icon(
+          icon,
+          color: Colors.white,
+          size: 15,
+        ),
       ),
-      title: Text(title, style: Theme.of(context).textTheme.titleSmall),
-      subtitle: subtitle != null
-          ? Text(subtitle!, style: Theme.of(context).textTheme.bodySmall)
-          : null,
-      trailing: trailing ?? (onTap != null ? const Icon(Icons.chevron_right_rounded, size: 20) : null),
+      title: Text(
+        title,
+        style: TextStyle(
+          color: titleColor ?? (isDark ? Colors.white : Colors.black),
+          fontSize: 16,
+          fontWeight: FontWeight.w800,
+          height: 0.1,
+        ),
+      ),
+      subtitle: Padding(
+        padding: const EdgeInsets.only(top: 6),
+        child: Text(
+          subtitle,
+          style: TextStyle(
+            color: isDark ? Colors.white38 : Colors.black54,
+            fontSize: 14,
+            fontWeight: FontWeight.w400,
+          ),
+        ),
+      ),
+      trailing: trailing,
       onTap: onTap,
     );
   }

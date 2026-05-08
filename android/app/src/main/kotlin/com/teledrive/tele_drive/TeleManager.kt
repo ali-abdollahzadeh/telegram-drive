@@ -91,22 +91,33 @@ class TeleManager(private val context: Context) {
     }
 
     // ---------- Data API ----------
+fun getMe(onResult: (Map<String, Any?>) -> Unit, onErr: (String) -> Unit) {
+    client?.send(TdApi.GetMe()) { obj ->
+        if (obj is TdApi.User) {
+            val profilePhoto = obj.profilePhoto
+            val smallPhotoFile = profilePhoto?.small
 
-    fun getMe(onResult: (Map<String, Any>) -> Unit, onErr: (String) -> Unit) {
-        client?.send(TdApi.GetMe()) { obj ->
-            if (obj is TdApi.User) {
-                val map = mapOf(
-                    "id" to obj.id,
-                    "firstName" to obj.firstName,
-                    "lastName" to obj.lastName,
-                    "phoneNumber" to obj.phoneNumber
-                )
-                mainHandler.post { onResult(map) }
-            } else if (obj is TdApi.Error) {
-                mainHandler.post { onErr(obj.message) }
-            }
+            val photoPath = smallPhotoFile?.local?.path
+            val photoFileId = smallPhotoFile?.id
+
+            val map = mapOf(
+                "id" to obj.id,
+                "firstName" to obj.firstName,
+                "lastName" to obj.lastName,
+                "phoneNumber" to obj.phoneNumber,
+                "photoPath" to photoPath,
+                "photoFileId" to photoFileId,
+                "photoDownloaded" to (smallPhotoFile?.local?.isDownloadingCompleted ?: false)
+            )
+
+            mainHandler.post { onResult(map) }
+        } else if (obj is TdApi.Error) {
+            mainHandler.post { onErr(obj.message) }
+        } else {
+            mainHandler.post { onErr("Unexpected response from getMe") }
         }
     }
+}
 
     /**
      * Load chat list, then return only channels/supergroups where the user
@@ -218,11 +229,26 @@ class TeleManager(private val context: Context) {
     }
 
     /**
-     * Download a file. Uses synchronous=false so UpdateFile events fire for progress.
+     * Clear TDLib file cache.
      */
-    fun downloadFile(fileId: Int, priority: Int, onResult: (Map<String, Any>) -> Unit, onErr: (String) -> Unit) {
-        // synchronous=false → returns immediately, progress via UpdateFile events
-        client?.send(TdApi.DownloadFile(fileId, priority, 0, 0, false)) { obj ->
+    fun optimizeStorage(onResult: () -> Unit, onErr: (String) -> Unit) {
+        val req = TdApi.OptimizeStorage()
+        client?.send(req) { obj ->
+            if (obj is TdApi.Ok) {
+                mainHandler.post { onResult() }
+            } else if (obj is TdApi.Error) {
+                mainHandler.post { onErr(obj.message) }
+            } else {
+                mainHandler.post { onResult() } // some versions return StorageStatistics
+            }
+        }
+    }
+
+    /**
+     * Download a file.
+     */
+    fun downloadFile(fileId: Int, priority: Int, synchronous: Boolean, onResult: (Map<String, Any>) -> Unit, onErr: (String) -> Unit) {
+        client?.send(TdApi.DownloadFile(fileId, priority, 0, 0, synchronous)) { obj ->
             if (obj is TdApi.File) {
                 mainHandler.post { onResult(mapFile(obj)) }
             } else if (obj is TdApi.Error) {

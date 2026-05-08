@@ -22,14 +22,13 @@ class NativeTelegramChannel {
   }
 
   // Stream of auth state events from TDLib
-  static Stream<Map<String, dynamic>> get authStateStream =>
-      _stream.where((event) => event['type'] == 'authState' || event['type'] == 'error');
+  static Stream<Map<String, dynamic>> get authStateStream => _stream.where(
+      (event) => event['type'] == 'authState' || event['type'] == 'error');
 
   // Stream of file download updates from TDLib
-  static Stream<Map<String, dynamic>> get fileUpdateStream =>
-      _stream
-          .where((event) => event['type'] == 'fileUpdate')
-          .map((event) => Map<String, dynamic>.from(event['file'] as Map));
+  static Stream<Map<String, dynamic>> get fileUpdateStream => _stream
+      .where((event) => event['type'] == 'fileUpdate')
+      .map((event) => Map<String, dynamic>.from(event['file'] as Map));
 
   /// Initialize TDLib with API credentials.
   /// TDLib will immediately push auth states via [authStateStream].
@@ -96,7 +95,8 @@ class NativeTelegramChannel {
   /// Get list of all chats (Saved Messages, channels, groups, etc.)
   static Future<List<Map<String, dynamic>>> getMyChats({int limit = 50}) async {
     try {
-      final result = await _method.invokeListMethod<Map<dynamic, dynamic>>('getMyChats', {
+      final result =
+          await _method.invokeListMethod<Map<dynamic, dynamic>>('getMyChats', {
         'limit': limit,
       });
       return result?.map((e) => Map<String, dynamic>.from(e)).toList() ?? [];
@@ -106,9 +106,11 @@ class NativeTelegramChannel {
   }
 
   /// Get files from a specific chat (e.g. Saved Messages).
-  static Future<List<Map<String, dynamic>>> getDriveFiles({required int chatId, int limit = 100}) async {
+  static Future<List<Map<String, dynamic>>> getDriveFiles(
+      {required int chatId, int limit = 100}) async {
     try {
-      final result = await _method.invokeListMethod<Map<dynamic, dynamic>>('getDriveFiles', {
+      final result = await _method
+          .invokeListMethod<Map<dynamic, dynamic>>('getDriveFiles', {
         'chatId': chatId,
         'limit': limit,
       });
@@ -119,11 +121,14 @@ class NativeTelegramChannel {
   }
 
   /// Start downloading a file from Telegram.
-  static Future<Map<String, dynamic>> downloadFile({required int fileId, int priority = 1}) async {
+  static Future<Map<String, dynamic>> downloadFile(
+      {required int fileId, int priority = 1, bool synchronous = false}) async {
     try {
-      final result = await _method.invokeMapMethod<String, dynamic>('downloadFile', {
+      final result =
+          await _method.invokeMapMethod<String, dynamic>('downloadFile', {
         'fileId': fileId,
         'priority': priority,
+        'synchronous': synchronous,
       });
       return result ?? {};
     } on PlatformException catch (e) {
@@ -132,9 +137,11 @@ class NativeTelegramChannel {
   }
 
   /// Upload a file to a Telegram chat.
-  static Future<Map<String, dynamic>> uploadFile({required int chatId, required String filePath}) async {
+  static Future<Map<String, dynamic>> uploadFile(
+      {required int chatId, required String filePath}) async {
     try {
-      final result = await _method.invokeMapMethod<String, dynamic>('uploadFile', {
+      final result =
+          await _method.invokeMapMethod<String, dynamic>('uploadFile', {
         'chatId': chatId,
         'filePath': filePath,
       });
@@ -145,12 +152,23 @@ class NativeTelegramChannel {
   }
 
   /// Create a private channel (acts as a folder in Telegram Drive).
-  static Future<Map<String, dynamic>> createFolder({required String title}) async {
+  static Future<Map<String, dynamic>> createFolder(
+      {required String title}) async {
     try {
-      final result = await _method.invokeMapMethod<String, dynamic>('createFolder', {
+      final result =
+          await _method.invokeMapMethod<String, dynamic>('createFolder', {
         'title': title,
       });
       return result ?? {};
+    } on PlatformException catch (e) {
+      throw _mapError(e);
+    }
+  }
+
+  /// Optimize (clear) the TDLib file cache.
+  static Future<void> optimizeStorage() async {
+    try {
+      await _method.invokeMethod('optimizeStorage');
     } on PlatformException catch (e) {
       throw _mapError(e);
     }

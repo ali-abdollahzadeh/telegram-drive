@@ -14,6 +14,7 @@ import '../../features/preview/presentation/screens/audio_preview_screen.dart';
 import '../../features/preview/presentation/screens/pdf_preview_screen.dart';
 import '../../features/search/presentation/screens/search_screen.dart';
 import '../../features/settings/presentation/screens/settings_screen.dart';
+import '../../features/settings/presentation/screens/privacy_policy_screen.dart';
 import '../../features/auth/presentation/providers/auth_provider.dart';
 import '../../services/storage/secure_storage_service.dart';
 
@@ -32,6 +33,7 @@ class AppRoutes {
   static const String previewPdf = '/preview/pdf/:fileId';
   static const String search = '/search';
   static const String settings = '/settings';
+  static const String privacyPolicy = '/settings/privacy-policy';
 }
 
 final appRouterProvider = Provider<GoRouter>((ref) {
@@ -126,6 +128,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.settings,
         builder: (context, state) => const SettingsScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.privacyPolicy,
+        builder: (context, state) => const PrivacyPolicyScreen(),
       ),
     ],
     errorBuilder: (context, state) => Scaffold(

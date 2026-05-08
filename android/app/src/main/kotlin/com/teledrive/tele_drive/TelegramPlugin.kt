@@ -91,7 +91,8 @@ class TelegramPlugin(private val context: Context) :
             "downloadFile" -> {
                 val fileId = call.argument<Int>("fileId") ?: 0
                 val priority = call.argument<Int>("priority") ?: 1
-                manager.downloadFile(fileId, priority, { file ->
+                val synchronous = call.argument<Boolean>("synchronous") ?: false
+                manager.downloadFile(fileId, priority, synchronous, { file ->
                     result.success(file)
                 }, { error ->
                     result.error("TDLIB_ERROR", error, null)
@@ -118,6 +119,13 @@ class TelegramPlugin(private val context: Context) :
                 val title = call.argument<String>("title") ?: ""
                 manager.createPrivateChannel(title, { chat ->
                     result.success(chat)
+                }, { error ->
+                    result.error("TDLIB_ERROR", error, null)
+                })
+            }
+            "optimizeStorage" -> {
+                manager.optimizeStorage({
+                    result.success(null)
                 }, { error ->
                     result.error("TDLIB_ERROR", error, null)
                 })

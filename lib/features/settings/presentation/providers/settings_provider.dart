@@ -6,14 +6,46 @@ import '../../../../services/platform/native_telegram_channel.dart';
 
 final themeModeProvider = StateProvider<ThemeMode>((ref) => ThemeMode.dark);
 final defaultViewModeProvider = StateProvider<String>((ref) => 'grid');
-final biometricsEnabledProvider = StateProvider<bool>((ref) => false);
+final downloadLocationProvider = StateProvider<String>((ref) => '/storage/emulated/0/Download');
 
 /// Fetches the real Telegram user profile (ID, phone number, name)
 final userProfileProvider = FutureProvider<Map<String, dynamic>>((ref) async {
   try {
-    return await NativeTelegramChannel.getMe();
+    var profile = await NativeTelegramChannel.getMe();
+
+    final photoPath = profile['photoPath'] as String?;
+    final photoFileId = profile['photoFileId'];
+    final photoDownloaded = profile['photoDownloaded'] as bool? ?? false;
+
+    if ((photoPath == null || photoPath.isEmpty || !photoDownloaded) && photoFileId != null) {
+      final downloadedFile = await NativeTelegramChannel.downloadFile(
+        fileId: photoFileId is int
+            ? photoFileId
+            : int.parse(photoFileId.toString()),
+        synchronous: true,
+      );
+
+      profile = {
+        ...profile,
+        'photoPath': downloadedFile['localPath'],
+      };
+    }
+
+    return {
+      'id': profile['id'],
+      'phoneNumber': profile['phoneNumber'],
+      'firstName': profile['firstName'],
+      'lastName': profile['lastName'],
+      'photoPath': profile['photoPath'],
+      'photoFileId': profile['photoFileId'],
+    };
   } catch (e) {
-    return {'phoneNumber': 'Unknown', 'firstName': 'Error'};
+    return {
+      'phoneNumber': 'Unknown',
+      'firstName': 'Error',
+      'photoPath': null,
+      'photoFileId': null,
+    };
   }
 });
 
@@ -23,7 +55,7 @@ class SettingsService {
     final prefs = await SharedPreferences.getInstance();
     final theme = prefs.getString(StorageKeys.themeMode) ?? 'dark';
     final view = prefs.getString(StorageKeys.viewMode) ?? 'grid';
-    final biometrics = prefs.getBool('biometrics_enabled') ?? false;
+    final dlPath = prefs.getString(StorageKeys.downloadPath) ?? '/storage/emulated/0/Download';
 
     final themeMode = theme == 'light'
         ? ThemeMode.light
@@ -33,12 +65,16 @@ class SettingsService {
 
     ref.read(themeModeProvider.notifier).state = themeMode;
     ref.read(defaultViewModeProvider.notifier).state = view;
-    ref.read(biometricsEnabledProvider.notifier).state = biometrics;
+    ref.read(downloadLocationProvider.notifier).state = dlPath;
   }
 
   static Future<void> saveTheme(ThemeMode mode) async {
     final prefs = await SharedPreferences.getInstance();
-    final label = mode == ThemeMode.light ? 'light' : mode == ThemeMode.system ? 'system' : 'dark';
+    final label = mode == ThemeMode.light
+        ? 'light'
+        : mode == ThemeMode.system
+            ? 'system'
+            : 'dark';
     await prefs.setString(StorageKeys.themeMode, label);
   }
 
@@ -47,8 +83,8 @@ class SettingsService {
     await prefs.setString(StorageKeys.viewMode, mode);
   }
 
-  static Future<void> saveBiometricsEnabled(bool enabled) async {
+  static Future<void> saveDownloadLocation(String path) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('biometrics_enabled', enabled);
+    await prefs.setString(StorageKeys.downloadPath, path);
   }
 }
