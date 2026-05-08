@@ -26,18 +26,19 @@ class StorageSelector extends StatelessWidget {
         itemBuilder: (_, i) {
           final folder = folders[i];
           final isSelected = folder.id == selectedId;
+          final isDark = Theme.of(context).brightness == Brightness.dark;
           final scheme = Theme.of(context).colorScheme;
+
           return GestureDetector(
             onTap: () => onSelected(folder.id),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               decoration: BoxDecoration(
-                color: isSelected ? scheme.primary : scheme.surfaceContainerHighest.withValues(alpha: 0.35),
+                color: isSelected 
+                    ? scheme.primary 
+                    : (isDark ? const Color(0xFF1C1C1E) : Colors.white),
                 borderRadius: BorderRadius.circular(22),
-                border: Border.all(
-                  color: isSelected ? scheme.primary : scheme.outline.withValues(alpha: 0.45),
-                ),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,

@@ -23,7 +23,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final themeMode = ref.watch(themeModeProvider);
-    final viewMode = ref.watch(defaultViewModeProvider);
     final userProfileAsync = ref.watch(userProfileProvider);
     final downloadLocation = ref.watch(downloadLocationProvider);
 

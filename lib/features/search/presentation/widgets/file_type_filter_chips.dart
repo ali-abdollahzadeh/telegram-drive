@@ -29,16 +29,14 @@ class FileTypeFilterChips extends StatelessWidget {
       DriveFileType.other: 'Other',
     };
 
-
     final icons = {
-
       DriveFileType.image: 'assets/icons/gallery_filled.svg',
       DriveFileType.video: 'assets/icons/video_filled.svg',
       DriveFileType.audio: 'assets/icons/music.svg',
       DriveFileType.pdf: 'assets/icons/file_filled.svg',
       DriveFileType.document: 'assets/icons/edit.svg',
-      DriveFileType.archive: 'assets/icons/file_filled.svg',
-      DriveFileType.other: 'assets/icons/file_filled.svg',
+      DriveFileType.archive: 'assets/icons/badgefolder.svg',
+      DriveFileType.other: 'assets/icons/ic_voicesharing.svg',
     };
 
     return SingleChildScrollView(
@@ -52,7 +50,7 @@ class FileTypeFilterChips extends StatelessWidget {
             padding: const EdgeInsets.only(right: 8),
             child: FilterChip(
               avatar: SvgPicture.asset(
-                icons[type] ?? 'assets/icons/other.svg',
+                icons[type] ?? 'assets/icons/badgefolder.svg',
                 width: 18,
                 height: 18,
               ),

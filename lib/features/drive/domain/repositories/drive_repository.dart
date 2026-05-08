@@ -25,6 +25,9 @@ abstract class DriveRepository {
   /// Delete a file (deletes the Telegram message)
   Future<void> deleteFile(DriveFile file);
 
+  /// Delete multiple files
+  Future<void> deleteFiles(List<DriveFile> files);
+
   /// Create a new folder (creates a private Telegram channel)
   Future<DriveFolder> createFolder(String name);
 

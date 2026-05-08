@@ -14,13 +14,15 @@ final driveProvider = StateNotifierProvider<DriveNotifier, DriveState>((ref) {
   return DriveNotifier(ref.read(driveRepositoryProvider));
 });
 
-final uploadProvider = StateNotifierProvider<UploadNotifier, UploadState>((ref) {
-  return UploadNotifier(ref.read(driveRepositoryProvider));
+final uploadProvider =
+    StateNotifierProvider<UploadNotifier, UploadState>((ref) {
+  return UploadNotifier(ref.read(driveRepositoryProvider), ref);
 });
 
 // ─── Drive State ──────────────────────────────────────────────────────────────
 
 enum SortOption { newest, oldest, nameAZ, nameZA, sizeAsc, sizeDesc }
+
 enum ViewMode { grid, list }
 
 class DriveState {
@@ -34,6 +36,9 @@ class DriveState {
   final DriveFileType? filterType;
   final SortOption sortOption;
   final ViewMode viewMode;
+  final Set<String> selectedFileIds;
+  final bool isSelectionMode;
+  final Set<String> pendingDeleteFileIds;
 
   const DriveState({
     this.files = const [],
@@ -46,12 +51,19 @@ class DriveState {
     this.filterType,
     this.sortOption = SortOption.newest,
     this.viewMode = ViewMode.grid,
+    this.selectedFileIds = const {},
+    this.isSelectionMode = false,
+    this.pendingDeleteFileIds = const {},
   });
 
   List<DriveFile> get filteredFiles {
-    var result = List<DriveFile>.from(files);
+    var result =
+        files.where((f) => !pendingDeleteFileIds.contains(f.id)).toList();
     if (searchQuery.isNotEmpty) {
-      result = result.where((f) => f.name.toLowerCase().contains(searchQuery.toLowerCase())).toList();
+      result = result
+          .where(
+              (f) => f.name.toLowerCase().contains(searchQuery.toLowerCase()))
+          .toList();
     }
     if (filterType != null) {
       result = result.where((f) => f.type == filterType).toList();
@@ -84,6 +96,9 @@ class DriveState {
     DriveFileType? filterType,
     SortOption? sortOption,
     ViewMode? viewMode,
+    Set<String>? selectedFileIds,
+    bool? isSelectionMode,
+    Set<String>? pendingDeleteFileIds,
     bool clearFilter = false,
     bool clearError = false,
   }) {
@@ -98,6 +113,9 @@ class DriveState {
       filterType: clearFilter ? null : (filterType ?? this.filterType),
       sortOption: sortOption ?? this.sortOption,
       viewMode: viewMode ?? this.viewMode,
+      selectedFileIds: selectedFileIds ?? this.selectedFileIds,
+      isSelectionMode: isSelectionMode ?? this.isSelectionMode,
+      pendingDeleteFileIds: pendingDeleteFileIds ?? this.pendingDeleteFileIds,
     );
   }
 }
@@ -106,10 +124,6 @@ class DriveState {
 
 class DriveNotifier extends StateNotifier<DriveState> {
   final DriveRepository _repository;
-
-  /// TDLib sometimes returns an empty file list on the very first fetch right after
-  /// session restore. One delayed refetch avoids showing a false "empty" state until pull-to-refresh.
-  bool _fileListBootstrapDone = false;
 
   DriveNotifier(this._repository) : super(const DriveState()) {
     loadAll();
@@ -125,15 +139,15 @@ class DriveNotifier extends StateNotifier<DriveState> {
       final id = folderId ?? state.currentFolderId;
       var files = await _repository.getFiles(folderId: id);
 
-      if (!_fileListBootstrapDone) {
-        if (files.isEmpty) {
-          await Future<void>.delayed(const Duration(milliseconds: 450));
-          files = await _repository.getFiles(folderId: id);
-        }
-        _fileListBootstrapDone = true;
+      // Always retry once if TDLib returned an empty list
+      // (happens on first launch and after folder switches while TDLib syncs)
+      if (files.isEmpty) {
+        await Future<void>.delayed(const Duration(milliseconds: 500));
+        files = await _repository.getFiles(folderId: id);
       }
 
-      state = state.copyWith(files: files, isLoadingFiles: false, currentFolderId: id);
+      state = state.copyWith(
+          files: files, isLoadingFiles: false, currentFolderId: id);
     } catch (e) {
       state = state.copyWith(isLoadingFiles: false, error: e.toString());
     }
@@ -150,11 +164,15 @@ class DriveNotifier extends StateNotifier<DriveState> {
   }
 
   void switchFolder(String folderId) {
+    if (folderId == state.currentFolderId) return;
+    // Clear current files immediately so the loading spinner shows
+    state = state.copyWith(files: [], isLoadingFiles: true, currentFolderId: folderId);
     loadFiles(folderId: folderId);
   }
 
   void toggleViewMode() {
-    final next = state.viewMode == ViewMode.grid ? ViewMode.list : ViewMode.grid;
+    final next =
+        state.viewMode == ViewMode.grid ? ViewMode.list : ViewMode.grid;
     state = state.copyWith(viewMode: next);
   }
 
@@ -170,14 +188,77 @@ class DriveNotifier extends StateNotifier<DriveState> {
     state = state.copyWith(sortOption: option);
   }
 
-  Future<void> deleteFile(DriveFile file) async {
+  // --- Selection Mode ---
+  void toggleSelectionMode() {
+    state = state
+        .copyWith(isSelectionMode: !state.isSelectionMode, selectedFileIds: {});
+  }
+
+  void toggleFileSelection(String fileId) {
+    final selected = Set<String>.from(state.selectedFileIds);
+    if (selected.contains(fileId)) {
+      selected.remove(fileId);
+    } else {
+      selected.add(fileId);
+    }
+    state = state.copyWith(
+        selectedFileIds: selected, isSelectionMode: selected.isNotEmpty);
+  }
+
+  void clearSelection() {
+    state = state.copyWith(isSelectionMode: false, selectedFileIds: {});
+  }
+
+  // --- Deletion & Undo ---
+  void hideFilesPendingDeletion(List<DriveFile> files) {
+    final pending = Set<String>.from(state.pendingDeleteFileIds);
+    pending.addAll(files.map((e) => e.id));
+    state = state.copyWith(
+        pendingDeleteFileIds: pending,
+        isSelectionMode: false,
+        selectedFileIds: {});
+  }
+
+  void undoDeletion(List<DriveFile> files) {
+    final pending = Set<String>.from(state.pendingDeleteFileIds);
+    pending.removeAll(files.map((e) => e.id));
+    state = state.copyWith(pendingDeleteFileIds: pending);
+  }
+
+  Future<void> confirmDeletion(List<DriveFile> files) async {
     try {
-      await _repository.deleteFile(file);
-      final updated = state.files.where((f) => f.id != file.id).toList();
-      state = state.copyWith(files: updated);
+      await _repository.deleteFiles(files);
+
+      final idsToRemove = files.map((e) => e.id).toSet();
+      final updatedFiles =
+          state.files.where((f) => !idsToRemove.contains(f.id)).toList();
+
+      final pending = Set<String>.from(state.pendingDeleteFileIds);
+      pending.removeAll(idsToRemove);
+
+      state =
+          state.copyWith(files: updatedFiles, pendingDeleteFileIds: pending);
     } catch (e) {
+      // Revert the hide since delete failed
+      undoDeletion(files);
       state = state.copyWith(error: e.toString());
     }
+  }
+
+  Future<void> deleteFile(DriveFile file) async {
+    // Kept for backward compatibility or direct deletes
+    await confirmDeletion([file]);
+  }
+
+  /// Called after a file is downloaded to update its localPath in state.
+  void updateFileLocalPath(String fileId, String localPath) {
+    final updatedFiles = state.files.map((f) {
+      if (f.id == fileId) {
+        return f.copyWith(localPath: localPath, isDownloaded: true);
+      }
+      return f;
+    }).toList();
+    state = state.copyWith(files: updatedFiles);
   }
 
   Future<DriveFolder> createFolder(String name) async {
@@ -245,8 +326,9 @@ class UploadState {
 
 class UploadNotifier extends StateNotifier<UploadState> {
   final DriveRepository _repository;
+  final Ref _ref;
 
-  UploadNotifier(this._repository) : super(const UploadState());
+  UploadNotifier(this._repository, this._ref) : super(const UploadState());
 
   Future<void> uploadFile({
     required String localPath,
@@ -267,14 +349,24 @@ class UploadNotifier extends StateNotifier<UploadState> {
         },
       );
       _updateTask(taskId, progress: 1.0, isComplete: true);
+
+      // Reload file list for the folder the file was uploaded to
+      await _ref.read(driveProvider.notifier).loadFiles(folderId: folderId);
     } catch (e) {
       _updateTask(taskId, hasError: true, error: e.toString());
     }
   }
 
-  void _updateTask(String taskId, {double? progress, bool? isComplete, bool? hasError, String? error}) {
+  void _updateTask(String taskId,
+      {double? progress, bool? isComplete, bool? hasError, String? error}) {
     final updated = state.tasks.map((t) {
-      if (t.id == taskId) return t.copyWith(progress: progress, isComplete: isComplete, hasError: hasError, error: error);
+      if (t.id == taskId) {
+        return t.copyWith(
+            progress: progress,
+            isComplete: isComplete,
+            hasError: hasError,
+            error: error);
+      }
       return t;
     }).toList();
     state = UploadState(tasks: updated);

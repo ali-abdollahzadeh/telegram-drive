@@ -5,7 +5,10 @@ import '../../domain/entities/drive_file.dart';
 
 class FileGridItem extends StatelessWidget {
   final DriveFile file;
+  final bool isSelectionMode;
+  final bool isSelected;
   final VoidCallback onTap;
+  final VoidCallback onLongPress;
   final VoidCallback onDelete;
   final VoidCallback? onDownload;
   final VoidCallback? onShare;
@@ -13,7 +16,10 @@ class FileGridItem extends StatelessWidget {
   const FileGridItem({
     super.key,
     required this.file,
+    required this.isSelectionMode,
+    required this.isSelected,
     required this.onTap,
+    required this.onLongPress,
     required this.onDelete,
     this.onDownload,
     this.onShare,
@@ -21,16 +27,22 @@ class FileGridItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = AppColors.fileTypeColor(FileUtils.getFileTypeLabel(file.type).toLowerCase());
-    final scheme = Theme.of(context).colorScheme;
+    final color = AppColors.fileTypeColor(
+        FileUtils.getFileTypeLabel(file.type).toLowerCase());
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return GestureDetector(
       onTap: onTap,
+      onLongPress: onLongPress,
       child: Container(
         decoration: BoxDecoration(
-          color: scheme.surfaceContainerHighest,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: scheme.outline.withValues(alpha: 0.35)),
+          color: isSelected
+              ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.1)
+              : (isDark ? const Color(0xFF1C1C1E) : Colors.white),
+          borderRadius: BorderRadius.circular(16),
+          border: isSelected
+              ? Border.all(color: Theme.of(context).colorScheme.primary, width: 2)
+              : null,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -41,7 +53,8 @@ class FileGridItem extends StatelessWidget {
                 width: double.infinity,
                 decoration: BoxDecoration(
                   color: color.withValues(alpha: 0.1),
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(11)),
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(16)),
                 ),
                 child: Stack(
                   alignment: Alignment.center,
@@ -52,7 +65,8 @@ class FileGridItem extends StatelessWidget {
                         child: Container(
                           decoration: BoxDecoration(
                             color: Colors.black.withValues(alpha: 0.5),
-                            borderRadius: const BorderRadius.vertical(top: Radius.circular(11)),
+                            borderRadius: const BorderRadius.vertical(
+                                top: Radius.circular(16)),
                           ),
                           child: Center(
                             child: CircularProgressIndicator(
@@ -64,26 +78,37 @@ class FileGridItem extends StatelessWidget {
                         ),
                       ),
                     // Type badge
-                    Positioned(
-                      top: 8,
-                      right: 8,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                        decoration: BoxDecoration(
-                          color: color.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Text(
-                          FileUtils.getFileTypeLabel(file.type).toUpperCase(),
-                          style: TextStyle(
-                            color: color,
-                            fontSize: 9,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 0.5,
+                    if (!isSelectionMode)
+                      Positioned(
+                        top: 8,
+                        right: 8,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: color.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            FileUtils.getFileTypeLabel(file.type).toUpperCase(),
+                            style: TextStyle(
+                              color: color,
+                              fontSize: 9,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 0.5,
+                            ),
                           ),
                         ),
                       ),
-                    ),
+                    if (isSelectionMode)
+                      Positioned(
+                        top: 8,
+                        right: 8,
+                        child: Icon(
+                          isSelected ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded,
+                          color: isSelected ? Theme.of(context).colorScheme.primary : Colors.grey,
+                        ),
+                      ),
                   ],
                 ),
               ),
@@ -112,10 +137,11 @@ class FileGridItem extends StatelessWidget {
                         style: Theme.of(context).textTheme.labelSmall,
                       ),
                       const Spacer(),
-                      GestureDetector(
-                        onTap: () => _showMenu(context),
-                        child: const Icon(Icons.more_vert_rounded, size: 16),
-                      ),
+                      if (!isSelectionMode)
+                        GestureDetector(
+                          onTap: () => _showMenu(context),
+                          child: const Icon(Icons.more_vert_rounded, size: 16),
+                        ),
                     ],
                   ),
                 ],
@@ -151,8 +177,10 @@ class FileGridItem extends StatelessWidget {
             },
           ),
           ListTile(
-            leading: const Icon(Icons.delete_outline_rounded, color: AppColors.error),
-            title: const Text('Delete', style: TextStyle(color: AppColors.error)),
+            leading: const Icon(Icons.delete_outline_rounded,
+                color: AppColors.error),
+            title:
+                const Text('Delete', style: TextStyle(color: AppColors.error)),
             onTap: () {
               Navigator.pop(context);
               onDelete();
@@ -166,13 +194,20 @@ class FileGridItem extends StatelessWidget {
 
   IconData _getIcon(DriveFileType type) {
     switch (type) {
-      case DriveFileType.image: return Icons.image_rounded;
-      case DriveFileType.video: return Icons.movie_rounded;
-      case DriveFileType.audio: return Icons.music_note_rounded;
-      case DriveFileType.pdf: return Icons.picture_as_pdf_rounded;
-      case DriveFileType.document: return Icons.description_rounded;
-      case DriveFileType.archive: return Icons.archive_rounded;
-      case DriveFileType.other: return Icons.insert_drive_file_rounded;
+      case DriveFileType.image:
+        return Icons.image_rounded;
+      case DriveFileType.video:
+        return Icons.movie_rounded;
+      case DriveFileType.audio:
+        return Icons.music_note_rounded;
+      case DriveFileType.pdf:
+        return Icons.picture_as_pdf_rounded;
+      case DriveFileType.document:
+        return Icons.description_rounded;
+      case DriveFileType.archive:
+        return Icons.archive_rounded;
+      case DriveFileType.other:
+        return Icons.insert_drive_file_rounded;
     }
   }
 }

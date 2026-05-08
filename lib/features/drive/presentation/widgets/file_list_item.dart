@@ -5,7 +5,10 @@ import '../../domain/entities/drive_file.dart';
 
 class FileListItem extends StatelessWidget {
   final DriveFile file;
+  final bool isSelectionMode;
+  final bool isSelected;
   final VoidCallback onTap;
+  final VoidCallback onLongPress;
   final VoidCallback onDelete;
   final VoidCallback? onDownload;
   final VoidCallback? onShare;
@@ -13,7 +16,10 @@ class FileListItem extends StatelessWidget {
   const FileListItem({
     super.key,
     required this.file,
+    required this.isSelectionMode,
+    required this.isSelected,
     required this.onTap,
+    required this.onLongPress,
     required this.onDelete,
     this.onDownload,
     this.onShare,
@@ -22,24 +28,35 @@ class FileListItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = AppColors.fileTypeColor(FileUtils.getFileTypeLabel(file.type).toLowerCase());
-    final scheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(10),
+        onLongPress: onLongPress,
+        borderRadius: BorderRadius.circular(12),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
           decoration: BoxDecoration(
-            color: scheme.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(
-              color: scheme.outline.withValues(alpha: 0.35),
-            ),
+            color: isSelected
+                ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.1)
+                : (isDark ? const Color(0xFF1C1C1E) : Colors.white),
+            borderRadius: BorderRadius.circular(12),
+            border: isSelected
+                ? Border.all(color: Theme.of(context).colorScheme.primary, width: 2)
+                : null,
           ),
           child: Row(
             children: [
+              if (isSelectionMode)
+                Padding(
+                  padding: const EdgeInsets.only(right: 12),
+                  child: Icon(
+                    isSelected ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded,
+                    color: isSelected ? Theme.of(context).colorScheme.primary : Colors.grey,
+                  ),
+                ),
               // Icon
               Container(
                 width: 48,
@@ -80,22 +97,23 @@ class FileListItem extends StatelessWidget {
                 ),
               ),
               // Actions
-              PopupMenuButton<String>(
-                icon: const Icon(Icons.more_vert_rounded, size: 20),
-                onSelected: (v) {
-                  if (v == 'download') onDownload?.call();
-                  if (v == 'share') onShare?.call();
-                  if (v == 'delete') onDelete();
-                },
-                itemBuilder: (_) => const [
-                  PopupMenuItem(value: 'download', child: Text('Download')),
-                  PopupMenuItem(value: 'share', child: Text('Share')),
-                  PopupMenuItem(
-                    value: 'delete',
-                    child: Text('Delete', style: TextStyle(color: AppColors.error)),
-                  ),
-                ],
-              ),
+              if (!isSelectionMode)
+                PopupMenuButton<String>(
+                  icon: const Icon(Icons.more_vert_rounded, size: 20),
+                  onSelected: (v) {
+                    if (v == 'download') onDownload?.call();
+                    if (v == 'share') onShare?.call();
+                    if (v == 'delete') onDelete();
+                  },
+                  itemBuilder: (_) => const [
+                    PopupMenuItem(value: 'download', child: Text('Download')),
+                    PopupMenuItem(value: 'share', child: Text('Share')),
+                    PopupMenuItem(
+                      value: 'delete',
+                      child: Text('Delete', style: TextStyle(color: AppColors.error)),
+                    ),
+                  ],
+                ),
             ],
           ),
         ),

@@ -130,6 +130,35 @@ class TelegramPlugin(private val context: Context) :
                     result.error("TDLIB_ERROR", error, null)
                 })
             }
+            "deleteMessages" -> {
+                try {
+                    val chatId = call.argument<String>("chatId")?.toLongOrNull() ?: 0L
+                    if (chatId == 0L) {
+                        result.error("INVALID_CHAT_ID", "chatId is 0 or null", null)
+                        return
+                    }
+                    val messageIdStrings = call.argument<List<*>>("messageIds") ?: emptyList<Any>()
+                    val messageIds = messageIdStrings.mapNotNull {
+                        when (it) {
+                            is String -> it.toLongOrNull()
+                            is Number -> it.toLong()
+                            else -> null
+                        }
+                    }.toLongArray()
+                    if (messageIds.isEmpty()) {
+                        result.error("EMPTY_ARRAY", "messageIds is empty or could not be parsed", null)
+                        return
+                    }
+                    val revoke = call.argument<Boolean>("revoke") ?: true
+                    manager.deleteMessages(chatId, messageIds, revoke, {
+                        result.success(null)
+                    }, { error ->
+                        result.error("TDLIB_ERROR", error, null)
+                    })
+                } catch (e: Exception) {
+                    result.error("EXCEPTION", e.message, null)
+                }
+            }
             else -> result.notImplemented()
         }
     }

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer' as dev;
 import '../../domain/entities/drive_file.dart';
 import '../../domain/entities/drive_folder.dart';
 import '../../domain/repositories/drive_repository.dart';
@@ -39,14 +40,15 @@ class DriveRepositoryImpl implements DriveRepository {
   Future<int> _getMyUserId() async {
     if (_myUserId != null) return _myUserId!;
     final me = await NativeTelegramChannel.getMe();
-    _myUserId = me['id'] as int;
+    _myUserId = (me['id'] as num).toInt();
+    dev.log('[_getMyUserId] resolved myId=$_myUserId');
     return _myUserId!;
   }
 
   @override
   Future<List<DriveFolder>> getFolders() async {
     final me = await NativeTelegramChannel.getMe();
-    final myId = me['id'] as int;
+    final myId = (me['id'] as num).toInt();
     _myUserId = myId;
 
     // Fetch all chats from TDLib
@@ -66,7 +68,7 @@ class DriveRepositoryImpl implements DriveRepository {
 
     // Add channels the user owns/is in
     for (final chat in chats) {
-      final chatId = chat['id'] as int;
+      final chatId = (chat['id'] as num).toInt();
       final title = chat['title'] as String;
       final type = chat['type'] as String;
 
@@ -207,7 +209,58 @@ class DriveRepositoryImpl implements DriveRepository {
 
   @override
   Future<void> deleteFile(DriveFile file) async {
-    throw UnimplementedError('Delete is pending native implementation.');
+    await deleteFiles([file]);
+  }
+
+  @override
+  Future<void> deleteFiles(List<DriveFile> files) async {
+    if (files.isEmpty) return;
+
+    final myId = await _getMyUserId();
+    dev.log('[deleteFiles] myId=$myId, deleting ${files.length} file(s)');
+
+    // Group files by chatId
+    final map = <int, List<int>>{};
+
+    for (final file in files) {
+      final chatId = file.folderId == savedMessagesId
+          ? myId
+          : (int.tryParse(file.folderId) ?? 0);
+      final msgId = int.tryParse(file.telegramMessageId) ?? 0;
+
+      dev.log('[deleteFiles] file=${file.name} folderId=${file.folderId} chatId=$chatId telegramMessageId=${file.telegramMessageId} msgId=$msgId');
+
+      if (chatId == 0) {
+        dev.log('[deleteFiles] SKIPPED ${file.name}: chatId is 0');
+        continue;
+      }
+      if (msgId == 0) {
+        dev.log('[deleteFiles] SKIPPED ${file.name}: msgId is 0');
+        continue;
+      }
+
+      map.putIfAbsent(chatId, () => []).add(msgId);
+    }
+
+    if (map.isEmpty) {
+      dev.log('[deleteFiles] Nothing to delete - map is empty');
+      return;
+    }
+
+    for (final entry in map.entries) {
+      dev.log('[deleteFiles] Calling deleteMessages chatId=${entry.key} messageIds=${entry.value}');
+      try {
+        await NativeTelegramChannel.deleteMessages(
+          chatId: entry.key,
+          messageIds: entry.value,
+          revoke: true,
+        );
+        dev.log('[deleteFiles] deleteMessages SUCCESS for chatId=${entry.key}');
+      } catch (e) {
+        dev.log('[deleteFiles] deleteMessages ERROR: $e');
+        rethrow;
+      }
+    }
   }
 
   @override

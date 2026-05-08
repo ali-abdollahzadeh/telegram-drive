@@ -20,8 +20,29 @@ class _FileDetailsScreenState extends ConsumerState<FileDetailsScreen> {
   double _downloadProgress = 0;
   String? _downloadedPath;
 
+  @override
+  void initState() {
+    super.initState();
+    // Restore local path if the file was already downloaded in a previous session
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final driveState = ref.read(driveProvider);
+      final file =
+          driveState.files.where((f) => f.id == widget.fileId).firstOrNull;
+      if (file != null && file.localPath != null && file.isDownloaded) {
+        setState(() => _downloadedPath = file.localPath);
+      }
+    });
+  }
+
   Future<void> _handleDownload(DriveFile file) async {
     if (_isDownloading) return;
+
+    // If already downloaded, just open directly
+    if (_downloadedPath != null || file.localPath != null) {
+      _openInApp(file);
+      return;
+    }
+
     setState(() {
       _isDownloading = true;
       _downloadProgress = 0;
@@ -38,9 +59,12 @@ class _FileDetailsScreenState extends ConsumerState<FileDetailsScreen> {
 
       if (!mounted) return;
       setState(() => _downloadedPath = path);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Download complete. You can open it now.')),
-      );
+
+      // Persist the downloaded state so "Open in App" shows on future visits
+      ref.read(driveProvider.notifier).updateFileLocalPath(file.id, path);
+
+      // Auto-open the file immediately after download
+      _openInApp(file);
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -79,7 +103,8 @@ class _FileDetailsScreenState extends ConsumerState<FileDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     final driveState = ref.watch(driveProvider);
-    final file = driveState.files.where((f) => f.id == widget.fileId).firstOrNull;
+    final file =
+        driveState.files.where((f) => f.id == widget.fileId).firstOrNull;
 
     if (file == null) {
       return Scaffold(
@@ -87,6 +112,9 @@ class _FileDetailsScreenState extends ConsumerState<FileDetailsScreen> {
         body: const Center(child: Text('File not found')),
       );
     }
+
+    final alreadyDownloaded =
+        _downloadedPath != null || (file.localPath != null && file.isDownloaded);
 
     return Scaffold(
       appBar: AppBar(
@@ -103,13 +131,15 @@ class _FileDetailsScreenState extends ConsumerState<FileDetailsScreen> {
                 width: 120,
                 height: 120,
                 decoration: BoxDecoration(
-                  color: AppColors.fileTypeColor(FileUtils.getFileTypeLabel(file.type).toLowerCase())
+                  color: AppColors.fileTypeColor(
+                          FileUtils.getFileTypeLabel(file.type).toLowerCase())
                       .withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(28),
                 ),
                 child: Icon(
                   _fileIcon(file.type),
-                  color: AppColors.fileTypeColor(FileUtils.getFileTypeLabel(file.type).toLowerCase()),
+                  color: AppColors.fileTypeColor(
+                      FileUtils.getFileTypeLabel(file.type).toLowerCase()),
                   size: 56,
                 ),
               ),
@@ -136,7 +166,8 @@ class _FileDetailsScreenState extends ConsumerState<FileDetailsScreen> {
             _InfoRow('Message ID', file.telegramMessageId),
             if (_isDownloading) ...[
               const SizedBox(height: 8),
-              LinearProgressIndicator(value: _downloadProgress > 0 ? _downloadProgress : null),
+              LinearProgressIndicator(
+                  value: _downloadProgress > 0 ? _downloadProgress : null),
               const SizedBox(height: 8),
               Text(
                 _downloadProgress > 0
@@ -151,32 +182,35 @@ class _FileDetailsScreenState extends ConsumerState<FileDetailsScreen> {
                 Expanded(
                   child: ElevatedButton.icon(
                     onPressed: _isDownloading ? null : () => _handleDownload(file),
-                    icon: Icon(_isDownloading ? Icons.downloading_rounded : Icons.download_rounded),
-                    label: Text(_isDownloading ? 'Downloading...' : 'Download'),
+                    icon: Icon(
+                      alreadyDownloaded
+                          ? Icons.open_in_new_rounded
+                          : (_isDownloading
+                              ? Icons.downloading_rounded
+                              : Icons.download_rounded),
+                    ),
+                    label: Text(
+                      alreadyDownloaded
+                          ? 'Open'
+                          : (_isDownloading ? 'Downloading...' : 'Download'),
+                    ),
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: OutlinedButton.icon(
-                    onPressed: () => ref.read(driveProvider.notifier).deleteFile(file),
-                    icon: const Icon(Icons.delete_outline_rounded, color: AppColors.error),
-                    label: const Text('Delete', style: TextStyle(color: AppColors.error)),
-                    style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.error)),
+                    onPressed: () =>
+                        ref.read(driveProvider.notifier).deleteFile(file),
+                    icon: const Icon(Icons.delete_outline_rounded,
+                        color: AppColors.error),
+                    label: const Text('Delete',
+                        style: TextStyle(color: AppColors.error)),
+                    style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: AppColors.error)),
                   ),
                 ),
               ],
             ),
-            if (_downloadedPath != null || file.isDownloaded) ...[
-              const SizedBox(height: 12),
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton.icon(
-                  onPressed: () => _openInApp(file),
-                  icon: const Icon(Icons.open_in_new_rounded),
-                  label: const Text('Open in App'),
-                ),
-              ),
-            ],
           ],
         ),
       ),

@@ -66,7 +66,10 @@ class _FolderScreenState extends ConsumerState<FolderScreen> {
                         itemCount: files.length,
                         itemBuilder: (_, i) => FileGridItem(
                           file: files[i],
+                          isSelectionMode: false,
+                          isSelected: false,
                           onTap: () {},
+                          onLongPress: () {},
                           onDelete: () => ref.read(driveProvider.notifier).deleteFile(files[i]),
                           onDownload: () => _downloadFile(files[i]),
                           onShare: () => _shareFile(files[i]),
@@ -77,7 +80,10 @@ class _FolderScreenState extends ConsumerState<FolderScreen> {
                       itemCount: files.length,
                       itemBuilder: (_, i) => FileListItem(
                         file: files[i],
+                        isSelectionMode: false,
+                        isSelected: false,
                         onTap: () {},
+                        onLongPress: () {},
                         onDelete: () => ref.read(driveProvider.notifier).deleteFile(files[i]),
                         onDownload: () => _downloadFile(files[i]),
                         onShare: () => _shareFile(files[i]),

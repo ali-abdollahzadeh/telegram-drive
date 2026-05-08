@@ -288,6 +288,33 @@ fun getMe(onResult: (Map<String, Any?>) -> Unit, onErr: (String) -> Unit) {
     }
 
     /**
+     * Delete multiple messages from a chat.
+     */
+    fun deleteMessages(chatId: Long, messageIds: LongArray, revoke: Boolean, onResult: () -> Unit, onErr: (String) -> Unit) {
+        Log.d(TAG, "deleteMessages called: chatId=$chatId messageIds=${messageIds.toList()} revoke=$revoke")
+        if (messageIds.isEmpty()) {
+            Log.w(TAG, "deleteMessages: messageIds is empty, skipping")
+            mainHandler.post { onErr("messageIds is empty") }
+            return
+        }
+        val request = TdApi.DeleteMessages(chatId, messageIds, revoke)
+        client?.send(request) { obj ->
+            Log.d(TAG, "deleteMessages result: ${obj.javaClass.simpleName}")
+            if (obj is TdApi.Ok) {
+                mainHandler.post { onResult() }
+            } else if (obj is TdApi.Error) {
+                Log.e(TAG, "deleteMessages TDLib error: code=${obj.code} message=${obj.message}")
+                mainHandler.post { onErr("${obj.code}: ${obj.message}") }
+            } else {
+                mainHandler.post { onResult() }
+            }
+        } ?: run {
+            Log.e(TAG, "deleteMessages: client is null")
+            mainHandler.post { onErr("TDLib client is null") }
+        }
+    }
+
+    /**
      * Create a private channel (no members, just the creator).
      * Returns the new chat info (id, title).
      */

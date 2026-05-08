@@ -174,6 +174,25 @@ class NativeTelegramChannel {
     }
   }
 
+  /// Delete multiple messages from a chat.
+  static Future<void> deleteMessages(
+      {required int chatId, required List<int> messageIds, bool revoke = true}) async {
+    try {
+      await _method.invokeMethod('deleteMessages', {
+        'chatId': chatId.toString(),
+        'messageIds': messageIds.map((id) => id.toString()).toList(),
+        'revoke': revoke,
+      }).timeout(
+        const Duration(seconds: 10),
+        onTimeout: () => null, // silently succeed on timeout
+      );
+    } on PlatformException catch (e) {
+      throw _mapError(e);
+    } on TimeoutException {
+      // Ignore timeout — TDLib may still process it in the background
+    }
+  }
+
   static Exception _mapError(PlatformException e) =>
       Exception(e.message ?? 'Unknown Telegram error');
 }

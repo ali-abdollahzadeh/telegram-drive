@@ -18,34 +18,26 @@ class AppTheme {
         onPrimary: AppColors.onPrimary,
         primaryContainer: AppColors.cardDarkAlt,
         onPrimaryContainer: textPrimary,
-
         secondary: AppColors.teledriveBlueText,
         onSecondary: AppColors.onPrimary,
         secondaryContainer: AppColors.cardDark,
         onSecondaryContainer: textPrimary,
-
         tertiary: AppColors.tertiary,
         onTertiary: AppColors.defaultBlackText,
         tertiaryContainer: AppColors.tertiaryContainer,
-
         surface: AppColors.surfaceDark,
         surfaceContainerHighest: AppColors.surfaceVariantDark,
         onSurface: textPrimary,
         onSurfaceVariant: textSecondary,
-
         error: AppColors.error,
         onError: Colors.white,
-
         outline: AppColors.dividerDark,
         shadow: Colors.black,
       ),
-
-      scaffoldBackgroundColor: AppColors.surfaceDark,
-
+      scaffoldBackgroundColor: const Color.fromARGB(255, 0, 0, 0),
       textTheme: _buildTextTheme(textPrimary, textSecondary),
-
       appBarTheme: AppBarTheme(
-        backgroundColor: AppColors.surfaceDark,
+        backgroundColor: const Color.fromARGB(255, 0, 0, 0),
         foregroundColor: textPrimary,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
@@ -63,7 +55,6 @@ class AppTheme {
           size: 24,
         ),
       ),
-
       cardTheme: CardThemeData(
         color: AppColors.cardDark,
         elevation: 0,
@@ -75,16 +66,13 @@ class AppTheme {
           ),
         ),
       ),
-
       inputDecorationTheme: _buildInputTheme(
         fillColor: AppColors.cardDarkAlt,
         borderColor: AppColors.dividerDark.withValues(alpha: 0.65),
         textColor: textPrimary,
         hintColor: textHint,
       ),
-
       elevatedButtonTheme: _buildElevatedButtonTheme(),
-
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
           backgroundColor: AppColors.teledriveBlue,
@@ -100,12 +88,10 @@ class AppTheme {
           ),
         ),
       ),
-
       outlinedButtonTheme: _buildOutlinedButtonTheme(
         AppColors.dividerDark.withValues(alpha: 0.7),
         textPrimary,
       ),
-
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           foregroundColor: AppColors.teledriveBlue,
@@ -115,19 +101,16 @@ class AppTheme {
           ),
         ),
       ),
-
       dividerTheme: DividerThemeData(
         color: AppColors.dividerDark.withValues(alpha: 0.45),
         thickness: 1,
         space: 0,
       ),
-
       listTileTheme: const ListTileThemeData(
         contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 2),
         iconColor: AppColors.teledriveBlue,
         textColor: textPrimary,
       ),
-
       bottomSheetTheme: const BottomSheetThemeData(
         backgroundColor: AppColors.cardDark,
         surfaceTintColor: Colors.transparent,
@@ -137,7 +120,6 @@ class AppTheme {
         showDragHandle: true,
         dragHandleColor: AppColors.dividerDark,
       ),
-
       chipTheme: ChipThemeData(
         backgroundColor: AppColors.cardDarkAlt,
         selectedColor: AppColors.teledriveBlue.withValues(alpha: 0.22),
@@ -154,7 +136,6 @@ class AppTheme {
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         checkmarkColor: AppColors.teledriveBlue,
       ),
-
       snackBarTheme: SnackBarThemeData(
         backgroundColor: AppColors.cardDarkAlt,
         contentTextStyle: GoogleFonts.roboto(
@@ -166,28 +147,27 @@ class AppTheme {
         ),
         behavior: SnackBarBehavior.floating,
       ),
-bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-  backgroundColor: AppColors.glassTargetMainTabs,
-  selectedItemColor: AppColors.glassTabSelectedText,
-  unselectedItemColor: AppColors.glassTabUnselected,
-  selectedLabelStyle: TextStyle(
-    fontSize: 12,
-    fontWeight: FontWeight.w700,
-  ),
-  unselectedLabelStyle: TextStyle(
-    fontSize: 12,
-    fontWeight: FontWeight.w700,
-  ),
-  type: BottomNavigationBarType.fixed,
-  elevation: 0,
-),
+      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+        backgroundColor: AppColors.glassTargetMainTabs,
+        selectedItemColor: AppColors.glassTabSelectedText,
+        unselectedItemColor: AppColors.glassTabUnselected,
+        selectedLabelStyle: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w700,
+        ),
+        unselectedLabelStyle: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w700,
+        ),
+        type: BottomNavigationBarType.fixed,
+        elevation: 0,
+      ),
       floatingActionButtonTheme: const FloatingActionButtonThemeData(
         backgroundColor: AppColors.teledriveBlue,
         foregroundColor: AppColors.onPrimary,
         elevation: 2,
         shape: StadiumBorder(),
       ),
-
       pageTransitionsTheme: const PageTransitionsTheme(
         builders: {
           TargetPlatform.android: CupertinoPageTransitionsBuilder(),
@@ -209,46 +189,39 @@ bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         onPrimary: AppColors.onPrimary,
         primaryContainer: AppColors.primaryContainer,
         onPrimaryContainer: AppColors.teledriveBlueText,
-
         secondary: AppColors.teledriveBlueText,
         onSecondary: AppColors.onPrimary,
         secondaryContainer: AppColors.secondaryContainer,
         onSecondaryContainer: AppColors.teledriveBlueText,
-
         tertiary: AppColors.tertiary,
         onTertiary: AppColors.defaultBlackText,
         tertiaryContainer: AppColors.tertiaryContainer,
-
         surface: AppColors.surfaceLight,
         surfaceContainerHighest: AppColors.surfaceVariantLight,
         onSurface: textPrimary,
         onSurfaceVariant: textSecondary,
-
         error: AppColors.error,
         onError: Colors.white,
-
         outline: AppColors.dividerLight,
         shadow: Colors.black,
       ),
-bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-  backgroundColor: AppColors.glassTargetMainTabs,
-  selectedItemColor: AppColors.glassTabSelectedText,
-  unselectedItemColor: AppColors.glassTabUnselected,
-  selectedLabelStyle: TextStyle(
-    fontSize: 12,
-    fontWeight: FontWeight.w700,
-  ),
-  unselectedLabelStyle: TextStyle(
-    fontSize: 12,
-    fontWeight: FontWeight.w700,
-  ),
-  type: BottomNavigationBarType.fixed,
-  elevation: 0,
-),
+      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+        backgroundColor: AppColors.glassTargetMainTabs,
+        selectedItemColor: AppColors.glassTabSelectedText,
+        unselectedItemColor: AppColors.glassTabUnselected,
+        selectedLabelStyle: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w700,
+        ),
+        unselectedLabelStyle: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w700,
+        ),
+        type: BottomNavigationBarType.fixed,
+        elevation: 0,
+      ),
       scaffoldBackgroundColor: AppColors.surfaceLight,
-
       textTheme: _buildTextTheme(textPrimary, textSecondary),
-
       appBarTheme: AppBarTheme(
         backgroundColor: AppColors.actionBarDefault,
         foregroundColor: AppColors.actionBarDefaultTitle,
@@ -268,7 +241,6 @@ bottomNavigationBarTheme: const BottomNavigationBarThemeData(
           size: 24,
         ),
       ),
-
       cardTheme: CardThemeData(
         color: AppColors.cardLight,
         elevation: 0,
@@ -280,16 +252,13 @@ bottomNavigationBarTheme: const BottomNavigationBarThemeData(
           ),
         ),
       ),
-
       inputDecorationTheme: _buildInputTheme(
         fillColor: AppColors.lightSurface,
         borderColor: AppColors.lightDivider,
         textColor: textPrimary,
         hintColor: textHint,
       ),
-
       elevatedButtonTheme: _buildElevatedButtonTheme(),
-
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
           backgroundColor: AppColors.teledriveBlue,
@@ -305,12 +274,10 @@ bottomNavigationBarTheme: const BottomNavigationBarThemeData(
           ),
         ),
       ),
-
       outlinedButtonTheme: _buildOutlinedButtonTheme(
         AppColors.dividerLight,
         textPrimary,
       ),
-
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           foregroundColor: AppColors.teledriveBlueText,
@@ -320,19 +287,16 @@ bottomNavigationBarTheme: const BottomNavigationBarThemeData(
           ),
         ),
       ),
-
       dividerTheme: const DividerThemeData(
         color: AppColors.dividerLight,
         thickness: 1,
         space: 0,
       ),
-
       listTileTheme: const ListTileThemeData(
         contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 2),
         iconColor: AppColors.teledriveBlue,
         textColor: textPrimary,
       ),
-
       bottomSheetTheme: const BottomSheetThemeData(
         backgroundColor: AppColors.cardLight,
         surfaceTintColor: Colors.transparent,
@@ -342,7 +306,6 @@ bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         showDragHandle: true,
         dragHandleColor: AppColors.lightDivider,
       ),
-
       chipTheme: ChipThemeData(
         backgroundColor: AppColors.lightSurface,
         selectedColor: AppColors.teledriveBlue.withValues(alpha: 0.18),
@@ -359,7 +322,6 @@ bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         checkmarkColor: AppColors.teledriveBlue,
       ),
-
       snackBarTheme: SnackBarThemeData(
         backgroundColor: const Color(0xFF323232),
         contentTextStyle: GoogleFonts.roboto(
@@ -371,14 +333,12 @@ bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         ),
         behavior: SnackBarBehavior.floating,
       ),
-
       floatingActionButtonTheme: const FloatingActionButtonThemeData(
         backgroundColor: AppColors.teledriveBlue,
         foregroundColor: AppColors.onPrimary,
         elevation: 2,
         shape: StadiumBorder(),
       ),
-
       pageTransitionsTheme: const PageTransitionsTheme(
         builders: {
           TargetPlatform.android: CupertinoPageTransitionsBuilder(),

@@ -18,7 +18,7 @@ class AppColors {
   static const Color teledriveBlueText = Color(0xFF298ACF);
 
   /// ThemeColors.DEFAULT_BLACK_TEXT = 0xFF1A1D21
-  static const Color defaultBlackText = Color(0xFF1A1D21);
+  static const Color defaultBlackText = Color.fromARGB(255, 0, 0, 0);
 
   static const Color onPrimary = Color(0xFFFFFFFF);
 
@@ -27,15 +27,18 @@ class AppColors {
   // ---------------------------------------------------------------------------
 
   static const Color lightBg = Color(0xFFFFFFFF); // key_windowBackgroundWhite
-  static const Color lightSurface = Color(0xFFF1F1F3); // key_windowBackgroundGray
+  static const Color lightSurface =
+      Color(0xFFF1F1F3); // key_windowBackgroundGray
   static const Color lightSurfaceAlt = Color(0xFFF5F5F5); // key_graySection
   static const Color lightSurfaceElevated = Color(0xFFFFFFFF);
   static const Color lightDivider = Color(0xFFD9D9D9); // key_divider
 
   static const Color lightTextPrimary = defaultBlackText;
-  static const Color lightTextSecondary = Color(0xFF808384); // windowBackgroundWhiteGrayText
+  static const Color lightTextSecondary =
+      Color(0xFF808384); // windowBackgroundWhiteGrayText
   static const Color lightTextSecondary2 = Color(0xFF82868A);
-  static const Color lightTextHint = Color(0xFFA8A8A8); // windowBackgroundWhiteHintText
+  static const Color lightTextHint =
+      Color(0xFFA8A8A8); // windowBackgroundWhiteHintText
   static const Color lightLinkText = Color(0xFF2678B6);
 
   // ---------------------------------------------------------------------------
@@ -186,11 +189,14 @@ class AppColors {
   // File / attachment colors
   // ---------------------------------------------------------------------------
 
-  static const Color fileImage = Color(0xFF459DF5); // chat_attachGalleryBackground
+  static const Color fileImage =
+      Color(0xFF459DF5); // chat_attachGalleryBackground
   static const Color fileVideo = Color(0xFF9F79E8); // key_color_purple
-  static const Color fileAudio = Color(0xFFEB6060); // chat_attachAudioBackground
+  static const Color fileAudio =
+      Color(0xFFEB6060); // chat_attachAudioBackground
   static const Color filePdf = Color(0xFFE05356); // key_color_red
-  static const Color fileDocument = Color(0xFF5DAFEB); // files_folderIconBackground
+  static const Color fileDocument =
+      Color(0xFF5DAFEB); // files_folderIconBackground
   static const Color fileArchive = Color(0xFFF28C39); // key_color_orange
   static const Color fileOther = Color(0xFFA1ABB5); // avatar_backgroundGray
 
@@ -235,7 +241,8 @@ class AppColors {
   static const Color tertiary = colorYellow;
   static const Color tertiaryContainer = Color(0xFFFFF3D8);
 
-  static const Color surfaceDark = Color(0xFF1C2229); // from voipgroup dark palette
+  static const Color surfaceDark =
+      Color(0xFF1C2229); // from voipgroup dark palette
   static const Color surfaceVariantDark = Color(0xFF222A33);
   static const Color cardDark = Color(0xFF222A33);
   static const Color cardDarkAlt = Color(0xFF2C3A45);
@@ -355,27 +362,27 @@ class AppColors {
         return fileOther;
     }
   }
-    // ---------------------------------------------------------------------------
+  // ---------------------------------------------------------------------------
 // teledrive Glass Tab colors
 // Source: ThemeColors.java
 // ---------------------------------------------------------------------------
 
-static const Color glassDefaultIcon = Color(0x991B2227);
-static const Color glassDefaultText = Color(0x991B2227);
+  static const Color glassDefaultIcon = Color(0x991B2227);
+  static const Color glassDefaultText = Color(0x991B2227);
 
-static const Color glassTargetMainTabs = Color(0xFFFFFFFF);
-static const Color glassTargetMainTopPanel = Color(0xFFFFFFFF);
+  static const Color glassTargetMainTabs = Color(0xFFFFFFFF);
+  static const Color glassTargetMainTopPanel = Color(0xFFFFFFFF);
 
-static const Color glassTabSelected = Color(0xFF1A91E6);
-static const Color glassTabSelectedText = Color(0xFF0D7FCF);
-static const Color glassTabUnselected = Color(0xFF1A1D21);
+  static const Color glassTabSelected = Color(0xFF1A91E6);
+  static const Color glassTabSelectedText = Color(0xFF0D7FCF);
+  static const Color glassTabUnselected = Color(0xFF1A1D21);
 
-static const Color glassSelectedBackground = Color(0x171A91E6);
+  static const Color glassSelectedBackground = Color(0x171A91E6);
 
-static const Color glassBadgeBackground = teledriveBlue;
-static const Color glassBadgeErrorBackground = fillRedNormal;
-static const Color glassBadgeText = Color(0xFFFFFFFF);
+  static const Color glassBadgeBackground = teledriveBlue;
+  static const Color glassBadgeErrorBackground = fillRedNormal;
+  static const Color glassBadgeText = Color(0xFFFFFFFF);
 
 // If you do not already have this:
-static const Color fillRedNormal = Color(0xFFEB5E5E);
+  static const Color fillRedNormal = Color(0xFFEB5E5E);
 }
