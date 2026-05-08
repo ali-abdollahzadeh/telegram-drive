@@ -13,19 +13,11 @@ void main() async {
     DeviceOrientation.portraitDown,
   ]);
 
-  // Configure status bar appearance
-  SystemChrome.setSystemUIOverlayStyle(
-    const SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.light,
-    ),
-  );
-
   await SecureStorageService.instance.init();
 
   runApp(
     const ProviderScope(
-      child: TelegramDriveApp(),
+      child: TeleDriveApp(),
     ),
   );
 }

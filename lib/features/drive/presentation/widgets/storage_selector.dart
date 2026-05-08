@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../../../core/theme/app_colors.dart';
 import '../../domain/entities/drive_folder.dart';
 
 /// Horizontal scrollable storage location selector tabs
@@ -27,16 +26,17 @@ class StorageSelector extends StatelessWidget {
         itemBuilder: (_, i) {
           final folder = folders[i];
           final isSelected = folder.id == selectedId;
+          final scheme = Theme.of(context).colorScheme;
           return GestureDetector(
             onTap: () => onSelected(folder.id),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               decoration: BoxDecoration(
-                color: isSelected ? AppColors.primary : Colors.transparent,
+                color: isSelected ? scheme.primary : scheme.surfaceContainerHighest.withValues(alpha: 0.35),
                 borderRadius: BorderRadius.circular(22),
                 border: Border.all(
-                  color: isSelected ? AppColors.primary : AppColors.dividerDark,
+                  color: isSelected ? scheme.primary : scheme.outline.withValues(alpha: 0.45),
                 ),
               ),
               child: Row(
@@ -45,7 +45,7 @@ class StorageSelector extends StatelessWidget {
                   Icon(
                     folder.isSavedMessages ? Icons.bookmark_rounded : Icons.folder_rounded,
                     size: 14,
-                    color: isSelected ? Colors.white : AppColors.textSecondaryDark,
+                    color: isSelected ? scheme.onPrimary : scheme.onSurfaceVariant,
                   ),
                   const SizedBox(width: 6),
                   Text(
@@ -53,7 +53,7 @@ class StorageSelector extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                      color: isSelected ? Colors.white : AppColors.textSecondaryDark,
+                      color: isSelected ? scheme.onPrimary : scheme.onSurfaceVariant,
                     ),
                   ),
                 ],

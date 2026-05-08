@@ -1,5 +1,5 @@
-name: telegram_drive
-description: Use Telegram as your private cloud drive.
+name: tele_drive
+description: Use TeleDrive as your private cloud drive.
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -89,3 +89,14 @@ flutter:
           weight: 600
         - asset: assets/fonts/Inter-Bold.ttf
           weight: 700
+
+  flutter_launcher_icons: ^0.14.3
+
+flutter_launcher_icons:
+  android: true
+  image_path: "assets/icons/icon.png"
+
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: "assets/icons/app_icon_foreground.png"
+
+  min_sdk_android: 21

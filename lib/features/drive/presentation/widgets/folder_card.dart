@@ -24,16 +24,14 @@ class FolderCard extends StatelessWidget {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         decoration: BoxDecoration(
-          gradient: isSelected ? AppColors.primaryGradient : null,
-          color: isSelected ? null : Theme.of(context).colorScheme.surfaceContainerHighest,
-          borderRadius: BorderRadius.circular(16),
+          color: isSelected
+              ? AppColors.teledriveBlue
+              : Theme.of(context).colorScheme.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? AppColors.primary : Theme.of(context).colorScheme.outline.withValues(alpha: 0.5),
-            width: isSelected ? 2 : 1,
+            color: isSelected ? AppColors.teledriveBlue : Theme.of(context).colorScheme.outline.withValues(alpha: 0.4),
+            width: 1,
           ),
-          boxShadow: isSelected
-              ? [BoxShadow(color: AppColors.primary.withValues(alpha: 0.3), blurRadius: 16, offset: const Offset(0, 4))]
-              : null,
         ),
         padding: const EdgeInsets.all(16),
         child: Column(

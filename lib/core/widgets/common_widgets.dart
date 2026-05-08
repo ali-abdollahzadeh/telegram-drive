@@ -109,13 +109,13 @@ class EmptyState extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 96,
-              height: 96,
+              width: 88,
+              height: 88,
               decoration: BoxDecoration(
-                gradient: AppColors.primaryGradient.scale(0.15),
+                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.12),
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, color: AppColors.primary, size: 44),
+              child: Icon(icon, color: Theme.of(context).colorScheme.primary, size: 40),
             ),
             const SizedBox(height: 24),
             Text(
@@ -140,16 +140,6 @@ class EmptyState extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-}
-
-extension LinearGradientExtension on LinearGradient {
-  LinearGradient scale(double opacity) {
-    return LinearGradient(
-      colors: colors.map((c) => c.withValues(alpha: opacity)).toList(),
-      begin: begin,
-      end: end,
     );
   }
 }

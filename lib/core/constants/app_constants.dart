@@ -1,8 +1,8 @@
 class AppConstants {
   AppConstants._();
 
-  static const String appName = 'Telegram Drive';
-  static const String appVersion = '1.0.0';
+  static const String appName = 'TeleDrive';
+  static const String appVersion = '1.2.0';
   static const String appTagline = 'Your Telegram, your cloud.';
   static const String telegramHelpUrl = 'https://my.telegram.org/auth';
   static const String telegramAppUrl = 'https://my.telegram.org';

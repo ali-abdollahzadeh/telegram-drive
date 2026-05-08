@@ -1,4 +1,4 @@
-package com.telegramdrive.telegram_drive
+package com.teledrive.tele_drive
 
 import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:just_audio/just_audio.dart';
+import 'package:share_plus/share_plus.dart';
+import 'dart:io';
 import '../../../../core/theme/app_colors.dart';
 import '../../../drive/presentation/providers/drive_provider.dart';
 
@@ -12,8 +15,79 @@ class AudioPreviewScreen extends ConsumerStatefulWidget {
 }
 
 class _AudioPreviewScreenState extends ConsumerState<AudioPreviewScreen> {
+  final AudioPlayer _player = AudioPlayer();
   bool _isPlaying = false;
+  bool _isDownloading = false;
+  String? _downloadedPath;
   double _progress = 0.0;
+  Duration _duration = Duration.zero;
+  Duration _position = Duration.zero;
+
+  @override
+  void initState() {
+    super.initState();
+    _player.positionStream.listen((pos) {
+      if (!mounted) return;
+      setState(() {
+        _position = pos;
+        _progress = _duration.inMilliseconds == 0
+            ? 0
+            : pos.inMilliseconds / _duration.inMilliseconds;
+      });
+    });
+    _player.playerStateStream.listen((state) {
+      if (!mounted) return;
+      setState(() => _isPlaying = state.playing);
+    });
+    _player.durationStream.listen((d) {
+      if (!mounted) return;
+      setState(() => _duration = d ?? Duration.zero);
+    });
+  }
+
+  @override
+  void dispose() {
+    _player.dispose();
+    super.dispose();
+  }
+
+  Future<void> _download() async {
+    final file = ref.read(driveProvider).files.where((f) => f.id == widget.fileId).firstOrNull;
+    if (file == null || _isDownloading) return;
+    setState(() => _isDownloading = true);
+    try {
+      final path = await ref.read(driveRepositoryProvider).downloadFile(file: file);
+      if (!mounted) return;
+      setState(() => _downloadedPath = path);
+      await _player.setFilePath(path);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Audio downloaded.')));
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Download failed: $e')));
+    } finally {
+      if (mounted) setState(() => _isDownloading = false);
+    }
+  }
+
+  Future<void> _share() async {
+    final file = ref.read(driveProvider).files.where((f) => f.id == widget.fileId).firstOrNull;
+    if (file == null) return;
+    final path = _downloadedPath ?? file.localPath;
+    if (path == null || path.isEmpty || !File(path).existsSync()) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Download first, then share.')),
+      );
+      return;
+    }
+    await SharePlus.instance.share(ShareParams(files: [XFile(path)], text: file.name));
+  }
+
+  String _fmt(Duration d) {
+    final m = d.inMinutes.remainder(60).toString().padLeft(1, '0');
+    final s = d.inSeconds.remainder(60).toString().padLeft(2, '0');
+    return '$m:$s';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +98,11 @@ class _AudioPreviewScreenState extends ConsumerState<AudioPreviewScreen> {
       appBar: AppBar(
         title: Text(file?.name ?? 'Audio Player', overflow: TextOverflow.ellipsis),
         actions: [
-          IconButton(icon: const Icon(Icons.download_rounded), onPressed: () {}),
+          IconButton(
+            icon: Icon(_isDownloading ? Icons.downloading_rounded : Icons.download_rounded),
+            onPressed: _isDownloading ? null : _download,
+          ),
+          IconButton(icon: const Icon(Icons.share_rounded), onPressed: _share),
         ],
       ),
       body: Padding(
@@ -71,15 +149,18 @@ class _AudioPreviewScreenState extends ConsumerState<AudioPreviewScreen> {
               ),
               child: Slider(
                 value: _progress,
-                onChanged: (v) => setState(() => _progress = v),
+                onChanged: (v) {
+                  final ms = (_duration.inMilliseconds * v).round();
+                  _player.seek(Duration(milliseconds: ms));
+                },
               ),
             ),
             const SizedBox(height: 8),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('0:00', style: Theme.of(context).textTheme.bodySmall),
-                Text('3:45', style: Theme.of(context).textTheme.bodySmall),
+                Text(_fmt(_position), style: Theme.of(context).textTheme.bodySmall),
+                Text(_fmt(_duration), style: Theme.of(context).textTheme.bodySmall),
               ],
             ),
             const SizedBox(height: 24),
@@ -93,7 +174,21 @@ class _AudioPreviewScreenState extends ConsumerState<AudioPreviewScreen> {
                 ),
                 const SizedBox(width: 16),
                 GestureDetector(
-                  onTap: () => setState(() => _isPlaying = !_isPlaying),
+                  onTap: () async {
+                    final localPath = _downloadedPath ?? file?.localPath;
+                    if (localPath == null || localPath.isEmpty || !File(localPath).existsSync()) {
+                      await _download();
+                      return;
+                    }
+                    if (_player.audioSource == null) {
+                      await _player.setFilePath(localPath);
+                    }
+                    if (_isPlaying) {
+                      await _player.pause();
+                    } else {
+                      await _player.play();
+                    }
+                  },
                   child: Container(
                     width: 72,
                     height: 72,
@@ -115,6 +210,9 @@ class _AudioPreviewScreenState extends ConsumerState<AudioPreviewScreen> {
                 ),
               ],
             ),
+            const SizedBox(height: 20),
+            if (_isDownloading)
+              const Text('Downloading...', style: TextStyle(color: AppColors.primary)),
           ],
         ),
       ),

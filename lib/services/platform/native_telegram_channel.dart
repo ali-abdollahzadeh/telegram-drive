@@ -3,13 +3,13 @@ import 'package:flutter/services.dart';
 
 /// Dart-side wrapper for the Kotlin TelegramPlugin.
 ///
-/// Method channel: 'com.telegramdrive.app/telegram'
-/// Event channel:  'com.telegramdrive.app/telegram_events'
+/// Method channel: 'com.teledrive.app/telegram'
+/// Event channel:  'com.teledrive.app/telegram_events'
 class NativeTelegramChannel {
   NativeTelegramChannel._();
 
-  static const _method = MethodChannel('com.telegramdrive.app/telegram');
-  static const _events = EventChannel('com.telegramdrive.app/telegram_events');
+  static const _method = MethodChannel('com.teledrive.app/telegram');
+  static const _events = EventChannel('com.teledrive.app/telegram_events');
 
   // Singleton broadcast stream — avoids multiple native listeners
   static Stream<Map<String, dynamic>>? _broadcastStream;

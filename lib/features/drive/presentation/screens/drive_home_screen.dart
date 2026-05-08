@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:share_plus/share_plus.dart';
+import 'dart:io';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/routing/app_router.dart';
 import '../../../../core/widgets/common_widgets.dart';
@@ -37,6 +39,37 @@ class _DriveHomeScreenState extends ConsumerState<DriveHomeScreen> {
     if (!mounted) return;
 
     _showUploadDestinationSheet(result.files, driveState);
+  }
+
+  Future<void> _downloadFile(DriveFile file) async {
+    try {
+      await ref.read(driveRepositoryProvider).downloadFile(file: file);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('${file.name} downloaded')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Download failed: $e')),
+      );
+    }
+  }
+
+  Future<void> _shareFile(DriveFile file) async {
+    var path = file.localPath;
+    if (path == null || path.isEmpty || !File(path).existsSync()) {
+      try {
+        path = await ref.read(driveRepositoryProvider).downloadFile(file: file);
+      } catch (e) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Share failed: $e')),
+        );
+        return;
+      }
+    }
+    await SharePlus.instance.share(ShareParams(files: [XFile(path)], text: file.name));
   }
 
   void _showUploadDestinationSheet(List<PlatformFile> files, DriveState driveState) {
@@ -182,7 +215,7 @@ class _DriveHomeScreenState extends ConsumerState<DriveHomeScreen> {
       floating: true,
       snap: true,
       elevation: 0,
-      title: const Text('Telegram Drive'),
+      title: const Text('TeleDrive'),
       actions: [
         IconButton(
           icon: const Icon(Icons.search_rounded),
@@ -209,54 +242,60 @@ class _DriveHomeScreenState extends ConsumerState<DriveHomeScreen> {
       ],
     );
   }
+Widget _buildFilterBar(DriveState driveState) {
+  final types = [null, ...DriveFileType.values];
 
-  Widget _buildFilterBar(DriveState driveState) {
-    final types = [null, ...DriveFileType.values];
-    final labels = {
-      null: 'All',
-      DriveFileType.image: 'Images',
-      DriveFileType.video: 'Videos',
-      DriveFileType.audio: 'Audio',
-      DriveFileType.pdf: 'PDF',
-      DriveFileType.document: 'Docs',
-      DriveFileType.archive: 'Archives',
-    };
+  final labels = {
+    null: 'All',
+    DriveFileType.image: 'Images',
+    DriveFileType.video: 'Videos',
+    DriveFileType.audio: 'Audio',
+    DriveFileType.pdf: 'PDF',
+    DriveFileType.document: 'Docs',
+    DriveFileType.archive: 'Archives',
+    DriveFileType.other: 'Other',
+  };
 
-    return SliverToBoxAdapter(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        child: Row(
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Row(
-                  children: types.map((type) {
-                    final isSelected = driveState.filterType == type;
-                    return Padding(
-                      padding: const EdgeInsets.only(right: 8),
-                      child: FilterChip(
-                        label: Text(labels[type] ?? 'All'),
-                        selected: isSelected,
-                        onSelected: (_) => ref.read(driveProvider.notifier).setFilter(type),
-                        selectedColor: AppColors.primary.withValues(alpha: 0.2),
-                        checkmarkColor: AppColors.primary,
-                      ),
-                    );
-                  }).toList(),
-                ),
+  return SliverToBoxAdapter(
+    child: Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                children: types.map((type) {
+                  final isSelected = driveState.filterType == type;
+
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: FilterChip(
+                      label: Text(labels[type] ?? 'Other'),
+                      selected: isSelected,
+                      onSelected: (_) =>
+                          ref.read(driveProvider.notifier).setFilter(type),
+                      selectedColor: Theme.of(context)
+                          .colorScheme
+                          .primary
+                          .withValues(alpha: 0.22),
+                      checkmarkColor: Theme.of(context).colorScheme.primary,
+                    ),
+                  );
+                }).toList(),
               ),
             ),
-            _SortButton(
-              current: driveState.sortOption,
-              onChanged: (s) => ref.read(driveProvider.notifier).setSort(s),
-            ),
-          ],
-        ),
+          ),
+          _SortButton(
+            current: driveState.sortOption,
+            onChanged: (s) => ref.read(driveProvider.notifier).setSort(s),
+          ),
+        ],
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildGridView(List<DriveFile> files) {
     return SliverPadding(
@@ -267,6 +306,8 @@ class _DriveHomeScreenState extends ConsumerState<DriveHomeScreen> {
             file: files[i],
             onTap: () => _openFile(files[i]),
             onDelete: () => ref.read(driveProvider.notifier).deleteFile(files[i]),
+            onDownload: () => _downloadFile(files[i]),
+            onShare: () => _shareFile(files[i]),
           ),
           childCount: files.length,
         ),
@@ -287,6 +328,8 @@ class _DriveHomeScreenState extends ConsumerState<DriveHomeScreen> {
           file: files[i],
           onTap: () => _openFile(files[i]),
           onDelete: () => ref.read(driveProvider.notifier).deleteFile(files[i]),
+          onDownload: () => _downloadFile(files[i]),
+          onShare: () => _shareFile(files[i]),
         ),
         childCount: files.length,
       ),

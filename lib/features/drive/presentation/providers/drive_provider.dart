@@ -107,6 +107,10 @@ class DriveState {
 class DriveNotifier extends StateNotifier<DriveState> {
   final DriveRepository _repository;
 
+  /// TDLib sometimes returns an empty file list on the very first fetch right after
+  /// session restore. One delayed refetch avoids showing a false "empty" state until pull-to-refresh.
+  bool _fileListBootstrapDone = false;
+
   DriveNotifier(this._repository) : super(const DriveState()) {
     loadAll();
   }
@@ -119,7 +123,16 @@ class DriveNotifier extends StateNotifier<DriveState> {
     state = state.copyWith(isLoadingFiles: true, clearError: true);
     try {
       final id = folderId ?? state.currentFolderId;
-      final files = await _repository.getFiles(folderId: id);
+      var files = await _repository.getFiles(folderId: id);
+
+      if (!_fileListBootstrapDone) {
+        if (files.isEmpty) {
+          await Future<void>.delayed(const Duration(milliseconds: 450));
+          files = await _repository.getFiles(folderId: id);
+        }
+        _fileListBootstrapDone = true;
+      }
+
       state = state.copyWith(files: files, isLoadingFiles: false, currentFolderId: id);
     } catch (e) {
       state = state.copyWith(isLoadingFiles: false, error: e.toString());

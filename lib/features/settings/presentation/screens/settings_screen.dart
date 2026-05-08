@@ -30,7 +30,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       body: ListView(
         children: [
           // Account Section
-          _SectionHeader('Account'),
+          const _SectionHeader('Account'),
           userProfileAsync.when(
             data: (profile) => _SettingsTile(
               icon: Icons.phone_rounded,
@@ -62,8 +62,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           const Divider(height: 32),
 
           // Storage Section
-          _SectionHeader('Storage'),
-          _SettingsTile(
+          const _SectionHeader('Storage'),
+          const  _SettingsTile(
             icon: Icons.storage_rounded,
             title: 'Cache Size',
             subtitle: '128 MB used',
@@ -75,7 +75,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               const SnackBar(content: Text('Cache cleared')),
             ),
           ),
-          _SettingsTile(
+          const _SettingsTile(
             icon: Icons.folder_open_rounded,
             title: 'Download Location',
             subtitle: '/storage/emulated/0/Download',
@@ -83,7 +83,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           const Divider(height: 32),
 
           // Appearance Section
-          _SectionHeader('Appearance'),
+          const _SectionHeader('Appearance'),
           _SettingsTile(
             icon: Icons.palette_rounded,
             title: 'Theme',
@@ -114,7 +114,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           const Divider(height: 32),
 
           // Security Section
-          _SectionHeader('Security'),
+          const _SectionHeader('Security'),
           _SettingsTile(
             icon: Icons.fingerprint_rounded,
             title: 'Biometric Unlock',
@@ -142,13 +142,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           const Divider(height: 32),
 
           // About Section
-          _SectionHeader('About'),
-          _SettingsTile(
+          const _SectionHeader('About'),
+          const _SettingsTile(
             icon: Icons.info_outline_rounded,
             title: 'App Version',
             subtitle: '${AppConstants.appVersion} (TDLib Integrated)',
           ),
-          _SettingsTile(
+          const _SettingsTile(
             icon: Icons.privacy_tip_rounded,
             title: 'Privacy Policy',
             subtitle: 'All data stays on your device',

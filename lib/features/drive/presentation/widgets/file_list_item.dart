@@ -7,30 +7,35 @@ class FileListItem extends StatelessWidget {
   final DriveFile file;
   final VoidCallback onTap;
   final VoidCallback onDelete;
+  final VoidCallback? onDownload;
+  final VoidCallback? onShare;
 
   const FileListItem({
     super.key,
     required this.file,
     required this.onTap,
     required this.onDelete,
+    this.onDownload,
+    this.onShare,
   });
 
   @override
   Widget build(BuildContext context) {
     final color = AppColors.fileTypeColor(FileUtils.getFileTypeLabel(file.type).toLowerCase());
+    final scheme = Theme.of(context).colorScheme;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(10),
         child: Container(
-          padding: const EdgeInsets.all(14),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(14),
+            color: scheme.surfaceContainerHighest,
+            borderRadius: BorderRadius.circular(10),
             border: Border.all(
-              color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.5),
+              color: scheme.outline.withValues(alpha: 0.35),
             ),
           ),
           child: Row(
@@ -78,6 +83,8 @@ class FileListItem extends StatelessWidget {
               PopupMenuButton<String>(
                 icon: const Icon(Icons.more_vert_rounded, size: 20),
                 onSelected: (v) {
+                  if (v == 'download') onDownload?.call();
+                  if (v == 'share') onShare?.call();
                   if (v == 'delete') onDelete();
                 },
                 itemBuilder: (_) => const [

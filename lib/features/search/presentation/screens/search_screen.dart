@@ -94,13 +94,13 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
           const Divider(height: 1),
           Expanded(
             child: query.isEmpty && results.isEmpty
-                ? EmptyState(
+                ? const EmptyState(
                     icon: Icons.search_rounded,
                     title: 'Search your files',
                     subtitle: 'Type to search across all your Telegram Drive files',
                   )
                 : results.isEmpty
-                    ? EmptyState(
+                    ? const EmptyState(
                         icon: Icons.search_off_rounded,
                         title: 'No results found',
                         subtitle: 'Try a different search term or filter',

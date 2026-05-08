@@ -1,4 +1,4 @@
-package com.telegramdrive.telegram_drive
+package com.teledrive.tele_drive
 
 import android.content.Context
 import android.os.Build
@@ -18,10 +18,10 @@ import org.drinkless.tdlib.TdApi
  *   authorizationStateWaitPassword        → 2FA password needed
  *   authorizationStateReady               → fully authenticated ✅
  */
-class TelegramManager(private val context: Context) {
+class TeleManager(private val context: Context) {
 
     companion object {
-        private const val TAG = "TelegramManager"
+        private const val TAG = "TeleManager"
     }
 
     private var client: Client? = null
@@ -274,7 +274,7 @@ class TelegramManager(private val context: Context) {
             title,     // title
             false,     // isForum
             true,      // isChannel — this makes it a channel, not a group
-            "Telegram Drive folder", // description
+            "TeleDrive folder", // description
             null,      // location
             0,         // messageAutoDeleteTime
             false      // forImport
@@ -406,8 +406,8 @@ class TelegramManager(private val context: Context) {
 
         // SetTdlibParameters is a flat class with public fields (TDLib 1.8.x+)
         val params = TdApi.SetTdlibParameters().apply {
-            apiId                = this@TelegramManager.apiId
-            apiHash              = this@TelegramManager.apiHash
+            apiId                = this@TeleManager.apiId
+            apiHash              = this@TeleManager.apiHash
             databaseDirectory    = dbPath
             filesDirectory       = "$dbPath/files"
             databaseEncryptionKey = ByteArray(0)

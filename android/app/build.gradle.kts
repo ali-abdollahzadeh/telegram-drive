@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "com.telegramdrive.telegram_drive"
+    namespace = "com.teledrive.tele_drive"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -19,7 +19,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.telegramdrive.telegram_drive"
+        applicationId = "com.teledrive.tele_drive"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode

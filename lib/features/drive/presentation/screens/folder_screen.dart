@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:share_plus/share_plus.dart';
+import 'dart:io';
 import '../../../../core/widgets/common_widgets.dart';
+import '../../domain/entities/drive_file.dart';
 import '../providers/drive_provider.dart';
 import '../widgets/file_grid_item.dart';
 import '../widgets/file_list_item.dart';
@@ -65,6 +68,8 @@ class _FolderScreenState extends ConsumerState<FolderScreen> {
                           file: files[i],
                           onTap: () {},
                           onDelete: () => ref.read(driveProvider.notifier).deleteFile(files[i]),
+                          onDownload: () => _downloadFile(files[i]),
+                          onShare: () => _shareFile(files[i]),
                         ),
                       ),
                     )
@@ -74,8 +79,41 @@ class _FolderScreenState extends ConsumerState<FolderScreen> {
                         file: files[i],
                         onTap: () {},
                         onDelete: () => ref.read(driveProvider.notifier).deleteFile(files[i]),
+                        onDownload: () => _downloadFile(files[i]),
+                        onShare: () => _shareFile(files[i]),
                       ),
                     ),
     );
+  }
+
+  Future<void> _downloadFile(DriveFile file) async {
+    try {
+      await ref.read(driveRepositoryProvider).downloadFile(file: file);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('${file.name} downloaded')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Download failed: $e')),
+      );
+    }
+  }
+
+  Future<void> _shareFile(DriveFile file) async {
+    var path = file.localPath;
+    if (path == null || path.isEmpty || !File(path).existsSync()) {
+      try {
+        path = await ref.read(driveRepositoryProvider).downloadFile(file: file);
+      } catch (e) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Share failed: $e')),
+        );
+        return;
+      }
+    }
+    await SharePlus.instance.share(ShareParams(files: [XFile(path)], text: file.name));
   }
 }

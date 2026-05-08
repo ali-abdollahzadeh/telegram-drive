@@ -11,6 +11,31 @@ class DriveRepositoryImpl implements DriveRepository {
   /// Cached user ID for Saved Messages chat
   int? _myUserId;
 
+  DriveFileType _resolveType(Map<String, dynamic> map) {
+    final rawType = (map['type'] as String? ?? 'other').toLowerCase();
+    final fileName = (map['fileName'] as String? ?? '').toLowerCase();
+
+    if (rawType == 'image' || fileName.endsWith('.jpg') || fileName.endsWith('.jpeg') || fileName.endsWith('.png') || fileName.endsWith('.webp') || fileName.endsWith('.gif')) {
+      return DriveFileType.image;
+    }
+    if (rawType == 'video' || fileName.endsWith('.mp4') || fileName.endsWith('.mkv') || fileName.endsWith('.mov') || fileName.endsWith('.webm')) {
+      return DriveFileType.video;
+    }
+    if (rawType == 'audio' || fileName.endsWith('.mp3') || fileName.endsWith('.m4a') || fileName.endsWith('.wav') || fileName.endsWith('.aac') || fileName.endsWith('.ogg')) {
+      return DriveFileType.audio;
+    }
+    if (rawType == 'pdf' || fileName.endsWith('.pdf')) {
+      return DriveFileType.pdf;
+    }
+    if (rawType == 'archive' || fileName.endsWith('.zip') || fileName.endsWith('.rar') || fileName.endsWith('.7z') || fileName.endsWith('.tar') || fileName.endsWith('.gz')) {
+      return DriveFileType.archive;
+    }
+    if (rawType == 'document') {
+      return DriveFileType.document;
+    }
+    return DriveFileType.other;
+  }
+
   Future<int> _getMyUserId() async {
     if (_myUserId != null) return _myUserId!;
     final me = await NativeTelegramChannel.getMe();
@@ -79,15 +104,8 @@ class DriveRepositoryImpl implements DriveRepository {
     final rawFiles = await NativeTelegramChannel.getDriveFiles(chatId: chatId, limit: 200);
 
     return rawFiles.map((map) {
-      DriveFileType type = DriveFileType.other;
-      switch (map['type']) {
-        case 'document': type = DriveFileType.document; break;
-        case 'image': type = DriveFileType.image; break;
-        case 'video': type = DriveFileType.video; break;
-        case 'audio': type = DriveFileType.audio; break;
-        case 'pdf': type = DriveFileType.pdf; break;
-        case 'archive': type = DriveFileType.archive; break;
-      }
+      final type = _resolveType(map);
+      final fileName = (map['fileName'] as String?) ?? 'Unknown File';
 
       final date = DateTime.fromMillisecondsSinceEpoch((map['date'] as int) * 1000);
       final localPath = map['localPath'] as String;
@@ -96,7 +114,7 @@ class DriveRepositoryImpl implements DriveRepository {
         id: map['fileId'].toString(),
         telegramMessageId: map['messageId'].toString(),
         folderId: folderId ?? savedMessagesId,
-        name: map['fileName'] ?? 'Unknown File',
+        name: fileName,
         type: type,
         size: map['size'] ?? 0,
         uploadedAt: date,

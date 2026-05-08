@@ -1,4 +1,4 @@
-package com.telegramdrive.telegram_drive
+package com.teledrive.tele_drive
 
 import android.content.Context
 import io.flutter.plugin.common.EventChannel
@@ -6,8 +6,8 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 
 /**
- * Bridges Flutter MethodChannel calls to TelegramManager.
- * Channel name: com.telegramdrive.app/telegram
+ * Bridges Flutter MethodChannel calls to TeleManager.
+ * Channel name: com.teledrive.app/telegram
  *
  * Methods Flutter can call:
  *   initialize(apiId: String, apiHash: String) → void
@@ -17,7 +17,7 @@ import io.flutter.plugin.common.MethodChannel
  *   logout()                                   → void
  *
  * Auth events are pushed back via EventChannel:
- *   com.telegramdrive.app/telegram_events
+ *   com.teledrive.app/telegram_events
  *   Event map: { "type": "authState", "state": "<tdlib state name>" }
  *              { "type": "error",     "code": "...", "message": "..." }
  */
@@ -25,11 +25,11 @@ class TelegramPlugin(private val context: Context) :
     MethodChannel.MethodCallHandler, EventChannel.StreamHandler {
 
     companion object {
-        const val METHOD_CHANNEL = "com.telegramdrive.app/telegram"
-        const val EVENT_CHANNEL  = "com.telegramdrive.app/telegram_events"
+        const val METHOD_CHANNEL = "com.teledrive.app/telegram"
+        const val EVENT_CHANNEL  = "com.teledrive.app/telegram_events"
     }
 
-    private val manager = TelegramManager(context)
+    private val manager = TeleManager(context)
     private var eventSink: EventChannel.EventSink? = null
 
     init {

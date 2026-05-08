@@ -7,25 +7,30 @@ class FileGridItem extends StatelessWidget {
   final DriveFile file;
   final VoidCallback onTap;
   final VoidCallback onDelete;
+  final VoidCallback? onDownload;
+  final VoidCallback? onShare;
 
   const FileGridItem({
     super.key,
     required this.file,
     required this.onTap,
     required this.onDelete,
+    this.onDownload,
+    this.onShare,
   });
 
   @override
   Widget build(BuildContext context) {
     final color = AppColors.fileTypeColor(FileUtils.getFileTypeLabel(file.type).toLowerCase());
+    final scheme = Theme.of(context).colorScheme;
 
     return GestureDetector(
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          gradient: AppColors.cardGradient,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.dividerDark, width: 1),
+          color: scheme.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: scheme.outline.withValues(alpha: 0.35)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -35,8 +40,8 @@ class FileGridItem extends StatelessWidget {
               child: Container(
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.08),
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
+                  color: color.withValues(alpha: 0.1),
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(11)),
                 ),
                 child: Stack(
                   alignment: Alignment.center,
@@ -47,7 +52,7 @@ class FileGridItem extends StatelessWidget {
                         child: Container(
                           decoration: BoxDecoration(
                             color: Colors.black.withValues(alpha: 0.5),
-                            borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
+                            borderRadius: const BorderRadius.vertical(top: Radius.circular(11)),
                           ),
                           child: Center(
                             child: CircularProgressIndicator(
@@ -132,12 +137,18 @@ class FileGridItem extends StatelessWidget {
           ListTile(
             leading: const Icon(Icons.download_rounded),
             title: const Text('Download'),
-            onTap: () => Navigator.pop(context),
+            onTap: () {
+              Navigator.pop(context);
+              onDownload?.call();
+            },
           ),
           ListTile(
             leading: const Icon(Icons.share_rounded),
             title: const Text('Share'),
-            onTap: () => Navigator.pop(context),
+            onTap: () {
+              Navigator.pop(context);
+              onShare?.call();
+            },
           ),
           ListTile(
             leading: const Icon(Icons.delete_outline_rounded, color: AppColors.error),

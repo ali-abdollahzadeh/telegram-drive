@@ -1,18 +1,85 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import '../../../../core/routing/app_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/file_utils.dart';
 import '../../domain/entities/drive_file.dart';
 import '../providers/drive_provider.dart';
 
-class FileDetailsScreen extends ConsumerWidget {
+class FileDetailsScreen extends ConsumerStatefulWidget {
   final String fileId;
   const FileDetailsScreen({super.key, required this.fileId});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<FileDetailsScreen> createState() => _FileDetailsScreenState();
+}
+
+class _FileDetailsScreenState extends ConsumerState<FileDetailsScreen> {
+  bool _isDownloading = false;
+  double _downloadProgress = 0;
+  String? _downloadedPath;
+
+  Future<void> _handleDownload(DriveFile file) async {
+    if (_isDownloading) return;
+    setState(() {
+      _isDownloading = true;
+      _downloadProgress = 0;
+    });
+
+    try {
+      final path = await ref.read(driveRepositoryProvider).downloadFile(
+        file: file,
+        onProgress: (progress) {
+          if (!mounted) return;
+          setState(() => _downloadProgress = progress.clamp(0, 1));
+        },
+      );
+
+      if (!mounted) return;
+      setState(() => _downloadedPath = path);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Download complete. You can open it now.')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Download failed: $e')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isDownloading = false);
+      }
+    }
+  }
+
+  void _openInApp(DriveFile file) {
+    switch (file.type) {
+      case DriveFileType.image:
+        context.push(AppRoutes.previewImage.replaceFirst(':fileId', file.id));
+      case DriveFileType.video:
+        context.push(AppRoutes.previewVideo.replaceFirst(':fileId', file.id));
+      case DriveFileType.audio:
+        context.push(AppRoutes.previewAudio.replaceFirst(':fileId', file.id));
+      case DriveFileType.pdf:
+        context.push(AppRoutes.previewPdf.replaceFirst(':fileId', file.id));
+      default:
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              _downloadedPath == null
+                  ? 'File downloaded. In-app preview is not available for this file type.'
+                  : 'File downloaded to: $_downloadedPath',
+            ),
+          ),
+        );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final driveState = ref.watch(driveProvider);
-    final file = driveState.files.where((f) => f.id == fileId).firstOrNull;
+    final file = driveState.files.where((f) => f.id == widget.fileId).firstOrNull;
 
     if (file == null) {
       return Scaffold(
@@ -67,14 +134,25 @@ class FileDetailsScreen extends ConsumerWidget {
             _InfoRow('Uploaded', DateFormatter.formatFull(file.uploadedAt)),
             _InfoRow('Type', FileUtils.getFileTypeLabel(file.type)),
             _InfoRow('Message ID', file.telegramMessageId),
+            if (_isDownloading) ...[
+              const SizedBox(height: 8),
+              LinearProgressIndicator(value: _downloadProgress > 0 ? _downloadProgress : null),
+              const SizedBox(height: 8),
+              Text(
+                _downloadProgress > 0
+                    ? 'Downloading ${(100 * _downloadProgress).toStringAsFixed(0)}%'
+                    : 'Starting download...',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ],
             const SizedBox(height: 32),
             Row(
               children: [
                 Expanded(
                   child: ElevatedButton.icon(
-                    onPressed: () {},
-                    icon: const Icon(Icons.download_rounded),
-                    label: const Text('Download'),
+                    onPressed: _isDownloading ? null : () => _handleDownload(file),
+                    icon: Icon(_isDownloading ? Icons.downloading_rounded : Icons.download_rounded),
+                    label: Text(_isDownloading ? 'Downloading...' : 'Download'),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -88,6 +166,17 @@ class FileDetailsScreen extends ConsumerWidget {
                 ),
               ],
             ),
+            if (_downloadedPath != null || file.isDownloaded) ...[
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  onPressed: () => _openInApp(file),
+                  icon: const Icon(Icons.open_in_new_rounded),
+                  label: const Text('Open in App'),
+                ),
+              ),
+            ],
           ],
         ),
       ),
