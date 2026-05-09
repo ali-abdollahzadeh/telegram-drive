@@ -1,10 +1,9 @@
 /// Abstract Telegram client service.
-/// Implement this with TDLib in Phase 2.
+///
+/// The Android native side owns the Telegram api_id and api_hash.
+/// Flutter should not pass Telegram API credentials.
 abstract class TelegramClientService {
-  Future<void> initialize({
-    required String apiId,
-    required String apiHash,
-  });
+  Future<void> initialize();
 
   Future<void> close();
 
@@ -13,10 +12,13 @@ abstract class TelegramClientService {
   Stream<TelegramUpdate> get updates;
 }
 
-/// Represents a generic Telegram update event
+/// Represents a generic Telegram update event.
 class TelegramUpdate {
   final String type;
   final Map<String, dynamic> data;
 
-  const TelegramUpdate({required this.type, required this.data});
+  const TelegramUpdate({
+    required this.type,
+    required this.data,
+  });
 }

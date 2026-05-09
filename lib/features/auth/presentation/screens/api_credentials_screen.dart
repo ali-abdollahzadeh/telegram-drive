@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:url_launcher/url_launcher.dart';
-import '../../../../core/constants/app_constants.dart';
+
 import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/constants/app_text.dart';
 import '../../../../core/routing/app_router.dart';
@@ -23,14 +21,10 @@ class ApiCredentialsScreen extends ConsumerStatefulWidget {
 
 class _ApiCredentialsScreenState extends ConsumerState<ApiCredentialsScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _apiIdCtrl = TextEditingController();
-  final _apiHashCtrl = TextEditingController();
   final _phoneCtrl = TextEditingController();
 
   @override
   void dispose() {
-    _apiIdCtrl.dispose();
-    _apiHashCtrl.dispose();
     _phoneCtrl.dispose();
     super.dispose();
   }
@@ -38,18 +32,19 @@ class _ApiCredentialsScreenState extends ConsumerState<ApiCredentialsScreen> {
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
 
+    final phone = _phoneCtrl.text.trim();
+
     await ref.read(authProvider.notifier).sendCode(
-          apiId: _apiIdCtrl.text.trim(),
-          apiHash: _apiHashCtrl.text.trim(),
-          phone: _phoneCtrl.text.trim(),
+          phone: phone,
         );
 
     if (!mounted) return;
 
     final state = ref.read(authProvider);
+
     if (state.step == AuthStep.codeSent) {
       context.push(
-        '${AppRoutes.verifyCode}?phone=${Uri.encodeComponent(_phoneCtrl.text.trim())}',
+        '${AppRoutes.verifyCode}?phone=${Uri.encodeComponent(phone)}',
       );
     }
   }
@@ -63,7 +58,9 @@ class _ApiCredentialsScreenState extends ConsumerState<ApiCredentialsScreen> {
       if (next.error != null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-              content: Text(next.error!), backgroundColor: AppColors.error),
+            content: Text(next.error!),
+            backgroundColor: AppColors.error,
+          ),
         );
         ref.read(authProvider.notifier).clearError();
       }
@@ -81,68 +78,35 @@ class _ApiCredentialsScreenState extends ConsumerState<ApiCredentialsScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 8),
+              AppSpacing.gapXS,
               Text(
-                AppText.enterApiCredentials,
+                AppText.enterPhoneNumber,
                 style: AppTextStyles.headlineSmall(context),
               ),
               AppSpacing.gapXS,
-              RichText(
-                text: TextSpan(
-                  style: Theme.of(context).textTheme.bodyMedium,
-                  children: [
-                    const TextSpan(text: AppText.getApiIdFrom),
-                    TextSpan(
-                      text: AppText.myTelegramOrg,
-                      style: const TextStyle(
-                          color: AppColors.primary,
-                          decoration: TextDecoration.underline),
-                      recognizer: TapGestureRecognizer()
-                        ..onTap = () =>
-                            launchUrl(Uri.parse(AppConstants.telegramHelpUrl)),
-                    ),
-                  ],
-                ),
+              Text(
+                AppText.phoneLoginDescription,
+                style: AppTextStyles.bodyMedium(context),
               ),
               const SizedBox(height: 32),
-              AuthTextField(
-                controller: _apiIdCtrl,
-                label: AppText.apiId,
-                hint: AppText.apiIdHint,
-                icon: Icons.vpn_key_rounded,
-                keyboardType: TextInputType.number,
-                validator: (v) {
-                  if (v == null || v.trim().isEmpty)
-                    return AppText.apiIdRequired;
-                  if (int.tryParse(v.trim()) == null)
-                    return AppText.apiIdMustBeNumber;
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              AuthTextField(
-                controller: _apiHashCtrl,
-                label: AppText.apiHash,
-                hint: AppText.apiHashHint,
-                icon: Icons.tag_rounded,
-                validator: (v) {
-                  if (v == null || v.trim().isEmpty)
-                    return AppText.apiHashRequired;
-                  if (v.trim().length < 16) return AppText.apiHashTooShort;
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
               AuthTextField(
                 controller: _phoneCtrl,
                 label: AppText.phoneNumber,
                 hint: AppText.phoneNumberHint,
                 icon: Icons.phone_rounded,
                 keyboardType: TextInputType.phone,
+                autofocus: true,
                 validator: (v) {
-                  if (v == null || v.trim().isEmpty)
+                  final value = v?.trim() ?? '';
+
+                  if (value.isEmpty) {
                     return AppText.phoneNumberRequired;
-                  if (v.trim().length < 8) return AppText.phoneNumberInvalid;
+                  }
+
+                  if (value.length < 8) {
+                    return AppText.phoneNumberInvalid;
+                  }
+
                   return null;
                 },
               ),
@@ -153,7 +117,7 @@ class _ApiCredentialsScreenState extends ConsumerState<ApiCredentialsScreen> {
                 onPressed: _submit,
               ),
               AppSpacing.gapXL,
-              _InfoCard(),
+              const _InfoCard(),
             ],
           ),
         ),
@@ -163,6 +127,8 @@ class _ApiCredentialsScreenState extends ConsumerState<ApiCredentialsScreen> {
 }
 
 class _InfoCard extends StatelessWidget {
+  const _InfoCard();
+
   @override
   Widget build(BuildContext context) {
     return AppCard(
@@ -172,14 +138,18 @@ class _InfoCard extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.info_outline_rounded,
-              color: AppColors.primary, size: 20),
+          const Icon(
+            Icons.info_outline_rounded,
+            color: AppColors.primary,
+            size: 20,
+          ),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Text(
-              AppText.credentialsStoredOnDevice,
-              style: AppTextStyles.bodySmall(context)
-                  ?.copyWith(color: AppColors.primary),
+              AppText.telegramSessionStoredOnDevice,
+              style: AppTextStyles.bodySmall(context)?.copyWith(
+                color: AppColors.primary,
+              ),
             ),
           ),
         ],

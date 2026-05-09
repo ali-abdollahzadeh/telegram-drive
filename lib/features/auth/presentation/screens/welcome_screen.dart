@@ -350,15 +350,21 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen>
           alignment: WrapAlignment.center,
           children: [
             _FeaturePill(
-                icon: Icons.lock_rounded, label: AppText.pillPrivate, isDark: isDark),
+                icon: Icons.lock_rounded,
+                label: AppText.pillPrivate,
+                isDark: isDark),
             _FeaturePill(
                 icon: Icons.cloud_upload_rounded,
                 label: AppText.pillUpload,
                 isDark: isDark),
             _FeaturePill(
-                icon: Icons.folder_rounded, label: AppText.pillOrganize, isDark: isDark),
+                icon: Icons.folder_rounded,
+                label: AppText.pillOrganize,
+                isDark: isDark),
             _FeaturePill(
-                icon: Icons.preview_rounded, label: AppText.pillPreview, isDark: isDark),
+                icon: Icons.preview_rounded,
+                label: AppText.pillPreview,
+                isDark: isDark),
           ],
         ),
       ],

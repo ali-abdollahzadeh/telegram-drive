@@ -1,9 +1,9 @@
 /// Abstract Telegram auth service interface.
+///
 /// Concrete implementation will use TDLib via platform channels.
+/// The user only provides phone number, login code, and 2FA password if needed.
 abstract class TelegramAuthService {
   Future<void> sendCode({
-    required String apiId,
-    required String apiHash,
     required String phone,
   });
 

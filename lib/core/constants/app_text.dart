@@ -13,7 +13,8 @@ class AppText {
   // Welcome screen
   // ---------------------------------------------------------------------------
   static const getStarted = 'Get Started';
-  static const dataStaysOnDevice = 'Your data never leaves your Telegram account.';
+  static const dataStaysOnDevice =
+      'Your data never leaves your Telegram account.';
 
   // Feature pills
   static const pillPrivate = 'Private';
@@ -30,29 +31,23 @@ class AppText {
   // Auth — API credentials screen
   // ---------------------------------------------------------------------------
   static const connectAccount = 'Connect Account';
-  static const enterApiCredentials = 'Enter your Telegram API credentials';
-  static const getApiIdFrom = 'Get your API ID and Hash from ';
-  static const myTelegramOrg = 'my.telegram.org';
 
   // Form labels & hints
-  static const apiId = 'API ID';
-  static const apiIdHint = 'e.g. 12345678';
-  static const apiHash = 'API Hash';
-  static const apiHashHint = 'e.g. a1b2c3d4e5f6...';
   static const phoneNumber = 'Phone Number';
   static const phoneNumberHint = '+1 234 567 8900';
+  static const enterPhoneNumber = 'Enter your phone number';
+
+  static const phoneLoginDescription =
+      'We use your phone number only to log in to your Telegram account. API credentials are handled inside the app.';
 
   // Validation messages
-  static const apiIdRequired = 'API ID is required';
-  static const apiIdMustBeNumber = 'API ID must be a number';
-  static const apiHashRequired = 'API Hash is required';
-  static const apiHashTooShort = 'API Hash seems too short';
   static const phoneNumberRequired = 'Phone number is required';
-  static const phoneNumberInvalid = 'Enter a valid phone number with country code';
+  static const phoneNumberInvalid =
+      'Enter a valid phone number with country code';
 
   // Info card
-  static const credentialsStoredOnDevice =
-      'Your credentials are stored only on your device. They never leave your phone.';
+  static const telegramSessionStoredOnDevice =
+      'Your telegram session is stored only on your device. It never leaves your phone.';
 
   // Button
   static const continueButton = 'Continue';
@@ -118,8 +113,10 @@ class AppText {
 
   // Deletion snack-bar
   static const undo = 'UNDO';
-  static const willBeDeleted = 'will be deleted'; // for single file: '"name" will be deleted'
-  static const filesWillBeDeleted = 'files will be deleted'; // for multiple files
+  static const willBeDeleted =
+      'will be deleted'; // for single file: '"name" will be deleted'
+  static const filesWillBeDeleted =
+      'files will be deleted'; // for multiple files
 
   // Filter chip labels
   static const filterAll = 'All';

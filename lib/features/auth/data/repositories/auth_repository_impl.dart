@@ -1,21 +1,23 @@
 import 'dart:async';
+
 import '../../domain/repositories/auth_repository.dart';
 import '../../../../services/platform/native_telegram_channel.dart';
 import '../../../../services/storage/secure_storage_service.dart';
 import '../../../../core/constants/app_constants.dart';
 
-/// Real Telegram authentication via TDLib (native Kotlin bridge).
+/// Real Telegram authentication via TDLib through the native Kotlin bridge.
+///
+/// Telegram api_id and api_hash are stored on the Android native side.
+/// Flutter only sends the user's phone number, login code, and 2FA password.
 ///
 /// Auth flow driven by TDLib auth state stream:
 ///   authorizationStateWaitPhoneNumber → ready for phone
 ///   authorizationStateWaitCode        → code sent to Telegram app
 ///   authorizationStateWaitPassword    → 2FA password required
-///   authorizationStateReady           → logged in ✅
+///   authorizationStateReady           → logged in
 class AuthRepositoryImpl implements AuthRepository {
   final SecureStorageService _storage;
 
-  // Completer used to wait for specific TDLib state transitions
-  Completer<String>? _pendingState;
   StreamSubscription<Map<String, dynamic>>? _sub;
 
   AuthRepositoryImpl(this._storage);
@@ -24,42 +26,52 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<bool> hasSession() async {
-    final apiId = await _storage.read(StorageKeys.apiId);
-    final apiHash = await _storage.read(StorageKeys.apiHash);
+    final isLoggedIn = await _storage.read(StorageKeys.isLoggedIn);
     final phone = await _storage.read(StorageKeys.phone);
-    return apiId != null && apiHash != null && phone != null;
+
+    return isLoggedIn == 'true' && phone != null && phone.isNotEmpty;
   }
 
   @override
   Future<void> sendCode({
-    required String apiId,
-    required String apiHash,
     required String phone,
   }) async {
-    // Save credentials locally (never leave the device)
-    await _storage.write(StorageKeys.apiId, apiId);
-    await _storage.write(StorageKeys.apiHash, apiHash);
-    await _storage.write(StorageKeys.phone, phone);
+    final cleanPhone = phone.trim();
 
-    // Start listening to TDLib auth state stream
+    if (cleanPhone.isEmpty) {
+      throw ArgumentError('Phone number cannot be empty.');
+    }
+
+    // Store only the phone number locally if your UI needs it.
+    // Do not store api_id or api_hash in Flutter anymore.
+    await _storage.write(StorageKeys.phone, cleanPhone);
+
+    // Start listening to TDLib auth state stream.
     _subscribeToAuthStream();
 
-    // Initialize TDLib — this triggers authorizationStateWaitPhoneNumber
-    await NativeTelegramChannel.initialize(apiId: apiId, apiHash: apiHash);
+    // Initialize TDLib.
+    // Native Android side reads api_id/api_hash from BuildConfig.
+    await NativeTelegramChannel.initialize();
 
-    // Wait for TDLib to be ready for the phone number
+    // Wait for TDLib to be ready for the phone number.
     await _waitForState('authorizationStateWaitPhoneNumber', timeout: 10);
 
-    // Send the phone → Telegram sends code to user's app
-    await NativeTelegramChannel.sendPhoneNumber(phone);
+    // Send the phone number. Telegram will send the login code.
+    await NativeTelegramChannel.sendPhoneNumber(cleanPhone);
 
-    // Wait for confirmation that code was sent
+    // Wait for confirmation that code is needed.
     await _waitForState('authorizationStateWaitCode', timeout: 15);
   }
 
   @override
   Future<bool> verifyCode(String code) async {
-    await NativeTelegramChannel.checkCode(code);
+    final cleanCode = code.trim();
+
+    if (cleanCode.isEmpty) {
+      throw ArgumentError('Login code cannot be empty.');
+    }
+
+    await NativeTelegramChannel.checkCode(cleanCode);
 
     final state = await _waitForAnyOf([
       'authorizationStateReady',
@@ -70,39 +82,51 @@ class AuthRepositoryImpl implements AuthRepository {
       await _onAuthenticated();
       return true;
     }
-    // authorizationStateWaitPassword → 2FA needed
+
+    // authorizationStateWaitPassword means 2FA is needed.
     return false;
   }
 
   @override
   Future<bool> verifyPassword(String password) async {
+    if (password.isEmpty) {
+      throw ArgumentError('Password cannot be empty.');
+    }
+
     await NativeTelegramChannel.checkPassword(password);
 
-    final state = await _waitForState('authorizationStateReady', timeout: 15);
+    final state = await _waitForState(
+      'authorizationStateReady',
+      timeout: 15,
+    );
+
     if (state == 'authorizationStateReady') {
       await _onAuthenticated();
       return true;
     }
+
     return false;
   }
 
   @override
   Future<void> logout() async {
-    _sub?.cancel();
+    await _sub?.cancel();
+    _sub = null;
+
     await NativeTelegramChannel.logout();
+
+    // This deletes app-side stored values such as phone/isLoggedIn.
+    // TDLib logout should clear Telegram session on the native side.
     await _storage.deleteAll();
   }
 
   @override
   Future<bool> restoreSession() async {
-    final apiId = await _storage.read(StorageKeys.apiId);
-    final apiHash = await _storage.read(StorageKeys.apiHash);
+    _subscribeToAuthStream();
 
-    if (apiId == null || apiHash == null) return false;
-
-    // Initialize TDLib — if a valid session database exists on disk,
-    // TDLib will automatically transition to authorizationStateReady
-    await NativeTelegramChannel.initialize(apiId: apiId, apiHash: apiHash);
+    // Initialize TDLib using native BuildConfig credentials.
+    // If a valid TDLib session exists on disk, TDLib should move to Ready.
+    await NativeTelegramChannel.initialize();
 
     try {
       final state = await _waitForAnyOf([
@@ -112,9 +136,17 @@ class AuthRepositoryImpl implements AuthRepository {
         'authorizationStateWaitPassword',
       ], timeout: 10);
 
-      return state == 'authorizationStateReady';
-    } catch (e) {
-      // Timeout or error — session is not valid
+      final isReady = state == 'authorizationStateReady';
+
+      if (isReady) {
+        await _storage.write(StorageKeys.isLoggedIn, 'true');
+      } else {
+        await _storage.write(StorageKeys.isLoggedIn, 'false');
+      }
+
+      return isReady;
+    } catch (_) {
+      await _storage.write(StorageKeys.isLoggedIn, 'false');
       return false;
     }
   }
@@ -123,28 +155,29 @@ class AuthRepositoryImpl implements AuthRepository {
 
   void _subscribeToAuthStream() {
     _sub?.cancel();
+
     _sub = NativeTelegramChannel.authStateStream.listen(
       (event) {
-        final type = event['type'] as String?;
-        if (type == 'authState') {
-          final state = event['state'] as String? ?? '';
-          _pendingState?.complete(state);
-        } else if (type == 'error') {
-          final msg = event['message'] as String? ?? 'Unknown error';
-          _pendingState?.completeError(Exception(msg));
-        }
+        // This subscription keeps the stream active.
+        // State-specific waiting is handled by _waitForAnyOf().
       },
-      onError: (e) => _pendingState?.completeError(e),
+      onError: (_) {
+        // Errors are handled by _waitForAnyOf() listeners.
+      },
     );
   }
 
-  /// Wait for a specific TDLib auth state, with timeout.
-  Future<String> _waitForState(String expectedState, {required int timeout}) async {
+  Future<String> _waitForState(
+    String expectedState, {
+    required int timeout,
+  }) async {
     return _waitForAnyOf([expectedState], timeout: timeout);
   }
 
-  /// Wait for any of the given states.
-  Future<String> _waitForAnyOf(List<String> states, {required int timeout}) async {
+  Future<String> _waitForAnyOf(
+    List<String> states, {
+    required int timeout,
+  }) async {
     final completer = Completer<String>();
     late StreamSubscription<Map<String, dynamic>> sub;
 
@@ -152,12 +185,21 @@ class AuthRepositoryImpl implements AuthRepository {
       (event) {
         if (event['type'] == 'authState') {
           final state = event['state'] as String? ?? '';
+
           if (states.contains(state) && !completer.isCompleted) {
             completer.complete(state);
             sub.cancel();
           }
         } else if (event['type'] == 'error' && !completer.isCompleted) {
-          completer.completeError(Exception(event['message']));
+          final message =
+              event['message'] as String? ?? 'Unknown Telegram error';
+          completer.completeError(Exception(message));
+          sub.cancel();
+        }
+      },
+      onError: (error) {
+        if (!completer.isCompleted) {
+          completer.completeError(error);
           sub.cancel();
         }
       },
@@ -167,13 +209,17 @@ class AuthRepositoryImpl implements AuthRepository {
       Duration(seconds: timeout),
       onTimeout: () {
         sub.cancel();
-        throw TimeoutException('Telegram auth timed out waiting for: $states');
+        throw TimeoutException(
+          'Telegram auth timed out waiting for: $states',
+        );
       },
     );
   }
 
   Future<void> _onAuthenticated() async {
     await _storage.write(StorageKeys.isLoggedIn, 'true');
-    _sub?.cancel();
+
+    await _sub?.cancel();
+    _sub = null;
   }
 }

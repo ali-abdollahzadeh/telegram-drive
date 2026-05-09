@@ -30,17 +30,13 @@ class NativeTelegramChannel {
       .where((event) => event['type'] == 'fileUpdate')
       .map((event) => Map<String, dynamic>.from(event['file'] as Map));
 
-  /// Initialize TDLib with API credentials.
-  /// TDLib will immediately push auth states via [authStateStream].
-  static Future<void> initialize({
-    required String apiId,
-    required String apiHash,
-  }) async {
+  /// Initialize TDLib.
+  ///
+  /// Telegram API credentials are stored on the Android native side
+  /// and injected through BuildConfig. Flutter must not send apiId/apiHash.
+  static Future<void> initialize() async {
     try {
-      await _method.invokeMethod('initialize', {
-        'apiId': apiId,
-        'apiHash': apiHash,
-      });
+      await _method.invokeMethod('initialize');
     } on PlatformException catch (e) {
       throw _mapError(e);
     }
@@ -176,7 +172,9 @@ class NativeTelegramChannel {
 
   /// Delete multiple messages from a chat.
   static Future<void> deleteMessages(
-      {required int chatId, required List<int> messageIds, bool revoke = true}) async {
+      {required int chatId,
+      required List<int> messageIds,
+      bool revoke = true}) async {
     try {
       await _method.invokeMethod('deleteMessages', {
         'chatId': chatId.toString(),
