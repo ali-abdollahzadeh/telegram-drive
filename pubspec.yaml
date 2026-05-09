@@ -44,6 +44,7 @@ dependencies:
   cached_network_image: ^3.3.1
   shimmer: ^3.0.0
   open_filex: ^4.7.0
+  country_picker: ^2.0.20
 
   # Typography
   google_fonts: ^6.2.1

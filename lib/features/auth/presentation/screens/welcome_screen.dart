@@ -172,8 +172,9 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen>
                       ),
                     ),
                     style: IconButton.styleFrom(
-                      backgroundColor:
-                          isDark ? AppColors.cardDark : AppColors.lightSurface,
+                      backgroundColor: isDark
+                          ? AppColors.backgroundDark
+                          : AppColors.lightSurface,
                       shape: const CircleBorder(),
                       padding: const EdgeInsets.all(8),
                     ),

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../features/auth/presentation/screens/welcome_screen.dart';
-import '../../features/auth/presentation/screens/api_credentials_screen.dart';
+import '../../features/auth/presentation/screens/login_credentials_screen.dart';
 import '../../features/auth/presentation/screens/code_verification_screen.dart';
 import '../../features/auth/presentation/screens/password_screen.dart';
 import '../../features/drive/presentation/screens/drive_home_screen.dart';
@@ -61,7 +61,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: AppRoutes.login,
-        builder: (context, state) => const ApiCredentialsScreen(),
+        builder: (context, state) => const LoginCredentialsScreen(),
       ),
       GoRoute(
         path: AppRoutes.verifyCode,

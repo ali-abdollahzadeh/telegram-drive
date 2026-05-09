@@ -244,6 +244,7 @@ class AppColors {
   static const Color surfaceDark =
       Color(0xFF1C2229); // from voipgroup dark palette
   static const Color surfaceVariantDark = Color(0xFF222A33);
+  static const Color backgroundDark = Color.fromARGB(255, 0, 0, 0);
   static const Color cardDark = Color(0xFF222A33);
   static const Color cardDarkAlt = Color(0xFF2C3A45);
   static const Color dividerDark = Color(0xFF394654);
