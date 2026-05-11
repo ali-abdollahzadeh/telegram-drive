@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>TeleDrive Support</title>
+    <meta name="description"
+        content="Support page for TeleDrive, a Flutter Android app that uses Telegram as a private cloud drive." />
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            background: #ffffff;
+            color: #202b36;
+            line-height: 1.7;
+        }
+
+        a {
+            color: #168acd;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .topbar {
+            border-bottom: 1px solid #e6ecf1;
+            background: #ffffff;
+        }
+
+        .nav {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .brand {
+            font-size: 22px;
+            font-weight: 700;
+            color: #168acd;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 22px;
+            font-size: 15px;
+            color: #52616f;
+        }
+
+        .page {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 64px 24px;
+        }
+
+        .hero {
+            text-align: center;
+            margin-bottom: 46px;
+        }
+
+        h1 {
+            font-size: 42px;
+            line-height: 1.2;
+            margin-bottom: 14px;
+            color: #1f2933;
+            letter-spacing: -0.03em;
+        }
+
+        .subtitle {
+            max-width: 680px;
+            margin: 0 auto;
+            color: #52616f;
+            font-size: 18px;
+        }
+
+        .contact-box {
+            background: #eef8fe;
+            border: 1px solid #d9eefb;
+            border-radius: 24px;
+            padding: 28px;
+            margin-bottom: 38px;
+            text-align: center;
+        }
+
+        .contact-box h2 {
+            margin-bottom: 10px;
+        }
+
+        .email {
+            display: inline-block;
+            margin-top: 10px;
+            font-size: 18px;
+            font-weight: 700;
+            color: #168acd;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 22px;
+        }
+
+        .card {
+            border: 1px solid #e6ecf1;
+            border-radius: 22px;
+            padding: 24px;
+            background: #ffffff;
+        }
+
+        .card h2 {
+            font-size: 22px;
+            color: #1f2933;
+            margin-bottom: 10px;
+        }
+
+        .card p {
+            color: #52616f;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        ul {
+            margin: 10px 0 0 20px;
+            color: #52616f;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        .footer {
+            padding: 30px 24px;
+            text-align: center;
+            background: #1f2933;
+            color: #cbd5df;
+            font-size: 14px;
+        }
+
+        .footer a {
+            color: #ffffff;
+            margin: 0 8px;
+        }
+
+        @media (max-width: 760px) {
+            .nav {
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 34px;
+            }
+
+            .page {
+                padding-top: 44px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header class="topbar">
+        <nav class="nav">
+            <a class="brand" href="/">TeleDrive</a>
+            <div class="nav-links">
+                <a href="/">Home</a>
+                <a href="/privacy/">Privacy</a>
+                <a href="/support/">Support</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="page">
+        <section class="hero">
+            <h1>TeleDrive Support</h1>
+            <p class="subtitle">
+                Need help with TeleDrive? This page explains how to contact support and solve common problems.
+            </p>
+        </section>
+
+        <section class="contact-box">
+            <h2>Contact Support</h2>
+            <p>
+                For questions, bug reports, or account-related problems, contact us by email.
+            </p>
+            <a class="email" href="mailto:your-email@example.com">your-email@example.com</a>
+        </section>
+
+        <section class="grid">
+            <div class="card">
+                <h2>Login Problems</h2>
+                <p>
+                    TeleDrive uses Telegram authentication. If you cannot log in, check these items:
+                </p>
+                <ul>
+                    <li>Make sure your phone number is correct.</li>
+                    <li>Check the verification code sent by Telegram.</li>
+                    <li>If your Telegram account uses 2FA, enter your 2FA password.</li>
+                    <li>Make sure your internet connection is working.</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h2>Upload and Download Issues</h2>
+                <p>
+                    If upload or download does not work correctly, try these steps:
+                </p>
+                <ul>
+                    <li>Keep the app open while the file operation is running.</li>
+                    <li>Check your internet connection.</li>
+                    <li>Try with a smaller file to test the connection.</li>
+                    <li>Make sure your device has enough free storage.</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h2>Folders and Channels</h2>
+                <p>
+                    TeleDrive uses Telegram Saved Messages and private channels as storage locations.
+                </p>
+                <ul>
+                    <li>Saved Messages is used as the default storage location.</li>
+                    <li>Private channels can be used as folders.</li>
+                    <li>You may need admin permission in a channel to upload files there.</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h2>Supported Platform</h2>
+                <p>
+                    TeleDrive currently focuses on Android because the native Telegram TDLib integration is implemented
+                    for Android.
+                </p>
+                <p>
+                    iOS support is not currently available.
+                </p>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <p>
+            © 2026 TeleDrive.
+            <a href="/">Home</a>
+            <a href="/privacy/">Privacy Policy</a>
+        </p>
+    </footer>
+</body>
+
+</html>

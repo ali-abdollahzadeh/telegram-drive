@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/constants/app_text.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/common_widgets.dart';
 
 class PrivacyPolicyScreen extends StatelessWidget {
   const PrivacyPolicyScreen({super.key});
@@ -38,13 +41,15 @@ class PrivacyPolicyScreen extends StatelessWidget {
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-          child: Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-              borderRadius: BorderRadius.circular(24),
-            ),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.lg,
+            vertical: AppSpacing.xl,
+          ),
+          child: AppCard(
+            padding: AppSpacing.padXXL,
+            color: isDark ? AppColors.cardDark : Colors.white,
+            borderRadius: AppRadius.xl,
+            hasBorder: false,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -53,7 +58,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
                   size: 48,
                   color: isDark ? Colors.white : Colors.black,
                 ),
-                const SizedBox(height: 24),
+                AppSpacing.gapXL,
                 Text(
                   AppText.privacyCommitmentHeading,
                   style: TextStyle(
@@ -63,7 +68,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
                     letterSpacing: -0.5,
                   ),
                 ),
-                const SizedBox(height: 16),
+                AppSpacing.gapMD,
                 Text(
                   AppText.privacyCommitmentBody,
                   style: TextStyle(
@@ -72,28 +77,49 @@ class PrivacyPolicyScreen extends StatelessWidget {
                     height: 1.5,
                   ),
                 ),
-                const SizedBox(height: 24),
+                AppSpacing.gapXL,
                 _PolicySection(
                   title: AppText.privacySection1Title,
                   description: AppText.privacySection1Body,
                   icon: Icons.no_accounts_rounded,
                   isDark: isDark,
                 ),
-                const SizedBox(height: 20),
+                AppSpacing.gapLG,
                 _PolicySection(
                   title: AppText.privacySection2Title,
                   description: AppText.privacySection2Body,
                   icon: Icons.smartphone_rounded,
                   isDark: isDark,
                 ),
-                const SizedBox(height: 20),
+                AppSpacing.gapLG,
                 _PolicySection(
                   title: AppText.privacySection3Title,
                   description: AppText.privacySection3Body,
                   icon: Icons.money_off_rounded,
                   isDark: isDark,
                 ),
-                const SizedBox(height: 32),
+                AppSpacing.gapLG,
+                _PolicySection(
+                  title: AppText.privacySection4Title,
+                  description: AppText.privacySection4Body,
+                  icon: Icons.money_off_rounded,
+                  isDark: isDark,
+                ),
+                AppSpacing.gapLG,
+                _PolicySection(
+                  title: AppText.privacySection5Title,
+                  description: AppText.privacySection5Body,
+                  icon: Icons.money_off_rounded,
+                  isDark: isDark,
+                ),
+                AppSpacing.gapLG,
+                _PolicySection(
+                  title: AppText.privacySection6Title,
+                  description: AppText.privacySection6Body,
+                  icon: Icons.money_off_rounded,
+                  isDark: isDark,
+                ),
+                AppSpacing.gapXXL,
                 Center(
                   child: Text(
                     AppText.privacyLastUpdated,
@@ -130,19 +156,15 @@ class _PolicySection extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFE5E5EA),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Icon(
-            icon,
-            size: 20,
-            color: isDark ? Colors.white70 : Colors.black87,
-          ),
+        IconBadge(
+          icon: icon,
+          color: isDark ? AppColors.textSecondaryDark : Colors.black87,
+          backgroundColor: isDark ? AppColors.cardDarkAlt : Colors.black12,
+          size: AppSpacing.huge,
+          iconSize: AppSpacing.lg,
+          borderRadius: AppRadius.md,
         ),
-        const SizedBox(width: 16),
+        AppSpacing.hGapMD,
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -155,7 +177,7 @@ class _PolicySection extends StatelessWidget {
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              const SizedBox(height: 4),
+              AppSpacing.gapXXS,
               Text(
                 description,
                 style: TextStyle(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../constants/app_dimensions.dart';
 import '../constants/app_spacing.dart';
 import '../constants/app_text.dart';
 import '../theme/app_colors.dart';
@@ -19,8 +20,8 @@ class LoadingView extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           const SizedBox(
-            width: 48,
-            height: 48,
+            width: AppDimensions.progressIndicatorLG,
+            height: AppDimensions.progressIndicatorLG,
             child: CircularProgressIndicator(
               color: AppColors.primary,
               strokeWidth: 3,
@@ -57,7 +58,7 @@ class ErrorView extends StatelessWidget {
             const IconBadge(
               icon: Icons.error_outline_rounded,
               color: AppColors.error,
-              size: 72,
+              size: AppDimensions.badgeXL,
               iconSize: 36,
             ),
             AppSpacing.gapMD,
@@ -79,7 +80,7 @@ class ErrorView extends StatelessWidget {
                 icon: const Icon(Icons.refresh_rounded),
                 label: const Text(AppText.tryAgain),
                 style: ElevatedButton.styleFrom(
-                  minimumSize: const Size(160, 48),
+                  minimumSize: const Size(160, AppDimensions.buttonHeightLG),
                 ),
               ),
             ],
@@ -117,8 +118,8 @@ class EmptyState extends StatelessWidget {
             IconBadge(
               icon: icon,
               color: Theme.of(context).colorScheme.primary,
-              size: 88,
-              iconSize: 40,
+              size: AppDimensions.badgeXXL,
+              iconSize: AppDimensions.iconXXL,
             ),
             AppSpacing.gapXL,
             Text(
@@ -137,7 +138,7 @@ class EmptyState extends StatelessWidget {
               ElevatedButton(
                 onPressed: onAction,
                 style: ElevatedButton.styleFrom(
-                  minimumSize: const Size(180, 48),
+                  minimumSize: const Size(180, AppDimensions.buttonHeightLG),
                 ),
                 child: Text(actionLabel!),
               ),
@@ -168,6 +169,7 @@ class AppCard extends StatelessWidget {
   final Color? color;
   final Color? borderColor;
   final double? borderWidth;
+  final bool hasBorder;
   final VoidCallback? onTap;
 
   const AppCard({
@@ -178,6 +180,7 @@ class AppCard extends StatelessWidget {
     this.color,
     this.borderColor,
     this.borderWidth,
+    this.hasBorder = true,
     this.onTap,
   });
 
@@ -190,17 +193,19 @@ class AppCard extends StatelessWidget {
         (isDark
             ? AppColors.dividerDark.withValues(alpha: 0.45)
             : AppColors.dividerLight.withValues(alpha: 0.8));
-    final radius = borderRadius ?? AppRadius.md;
+    final radius = borderRadius ?? AppRadius.card;
 
     final container = Container(
       padding: padding,
       decoration: BoxDecoration(
         color: effectiveColor,
         borderRadius: BorderRadius.circular(radius),
-        border: Border.all(
-          color: effectiveBorderColor,
-          width: borderWidth ?? 1,
-        ),
+        border: hasBorder
+            ? Border.all(
+                color: effectiveBorderColor,
+                width: borderWidth ?? 1,
+              )
+            : null,
       ),
       child: child,
     );
@@ -253,8 +258,8 @@ class IconBadge extends StatelessWidget {
     super.key,
     required this.icon,
     required this.color,
-    this.size = 48,
-    this.iconSize = 24,
+    this.size = AppDimensions.badgeLG,
+    this.iconSize = AppDimensions.iconLG,
     this.backgroundAlpha = 0.12,
     this.backgroundColor,
     this.borderRadius,
@@ -308,7 +313,7 @@ class PrimaryButton extends StatelessWidget {
     this.isLoading = false,
     this.icon,
     this.minimumWidth,
-    this.minimumHeight = 50,
+    this.minimumHeight = AppDimensions.buttonHeightXL,
   });
 
   @override
@@ -322,8 +327,8 @@ class PrimaryButton extends StatelessWidget {
       ),
       child: isLoading
           ? const SizedBox(
-              width: 22,
-              height: 22,
+              width: AppDimensions.progressIndicatorSM,
+              height: AppDimensions.progressIndicatorSM,
               child: CircularProgressIndicator(
                 strokeWidth: 2.5,
                 color: Colors.white,
@@ -333,7 +338,7 @@ class PrimaryButton extends StatelessWidget {
               ? Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(icon, size: 18),
+                    Icon(icon, size: AppDimensions.iconSM),
                     AppSpacing.hGapXS,
                     Text(label),
                   ],
@@ -528,7 +533,7 @@ class ConfirmDialog extends StatelessWidget {
           style: ElevatedButton.styleFrom(
             backgroundColor: isDestructive ? AppColors.error : null,
             foregroundColor: isDestructive ? Colors.white : null,
-            minimumSize: const Size(90, 40),
+            minimumSize: const Size(90, AppDimensions.buttonHeightSM),
           ),
           onPressed: () {
             Navigator.pop(context);

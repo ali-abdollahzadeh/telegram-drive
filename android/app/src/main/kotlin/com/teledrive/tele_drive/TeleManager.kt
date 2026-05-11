@@ -1,4 +1,4 @@
-package com.teledrive.tele_drive
+package dev.aliabdollahzadeh.teledrive
 
 import android.content.Context
 import android.os.Build

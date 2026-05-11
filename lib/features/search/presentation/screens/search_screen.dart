@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/constants/app_text.dart';
-import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/widgets/common_widgets.dart';
 import '../../../drive/domain/entities/drive_file.dart';
 import '../../../drive/presentation/providers/drive_provider.dart';
@@ -11,7 +9,8 @@ import '../widgets/search_result_item.dart';
 
 final searchQueryProvider = StateProvider<String>((ref) => '');
 final searchFilterProvider = StateProvider<DriveFileType?>((ref) => null);
-final searchSortProvider = StateProvider<SortOption>((ref) => SortOption.newest);
+final searchSortProvider =
+    StateProvider<SortOption>((ref) => SortOption.newest);
 
 class SearchScreen extends ConsumerStatefulWidget {
   const SearchScreen({super.key});
@@ -36,7 +35,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     final allFiles = ref.watch(driveProvider).files;
 
     var results = allFiles.where((f) {
-      final matchesQuery = query.isEmpty || f.name.toLowerCase().contains(query);
+      final matchesQuery =
+          query.isEmpty || f.name.toLowerCase().contains(query);
       final matchesFilter = filter == null || f.type == filter;
       return matchesQuery && matchesFilter;
     }).toList();
@@ -92,7 +92,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         children: [
           FileTypeFilterChips(
             selected: ref.watch(searchFilterProvider),
-            onSelected: (t) => ref.read(searchFilterProvider.notifier).state = t,
+            onSelected: (t) =>
+                ref.read(searchFilterProvider.notifier).state = t,
           ),
           const Divider(height: 1),
           Expanded(
@@ -110,7 +111,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                       )
                     : ListView.builder(
                         itemCount: results.length,
-                        itemBuilder: (_, i) => SearchResultItem(file: results[i]),
+                        itemBuilder: (_, i) =>
+                            SearchResultItem(file: results[i]),
                       ),
           ),
         ],

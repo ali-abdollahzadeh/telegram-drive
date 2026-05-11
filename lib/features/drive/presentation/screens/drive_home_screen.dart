@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:share_plus/share_plus.dart';
 import 'dart:io';
+import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/constants/app_text.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/routing/app_router.dart';
@@ -53,7 +54,9 @@ class _DriveHomeScreenState extends ConsumerState<DriveHomeScreen> {
         }
       }
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${AppText.uploadingN} ${result.files.length} ${AppText.uploadingFilesSuffix}')),
+        SnackBar(
+            content: Text(
+                '${AppText.uploadingN} ${result.files.length} ${AppText.uploadingFilesSuffix}')),
       );
       return;
     }
@@ -100,15 +103,20 @@ class _DriveHomeScreenState extends ConsumerState<DriveHomeScreen> {
       context: context,
       isScrollControlled: true,
       builder: (ctx) => Padding(
-        padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.xl,
+          AppSpacing.xs,
+          AppSpacing.xl,
+          AppSpacing.xxl,
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 8),
+            AppSpacing.gapXS,
             Text('Upload ${files.length} file(s) to...',
                 style: Theme.of(ctx).textTheme.titleMedium),
-            const SizedBox(height: 16),
+            AppSpacing.gapMD,
             ...driveState.folders.map((folder) => ListTile(
                   leading: Container(
                     width: 40,
@@ -130,7 +138,8 @@ class _DriveHomeScreenState extends ConsumerState<DriveHomeScreen> {
                     ),
                   ),
                   title: Text(folder.title),
-                  subtitle: Text('${folder.fileCount} ${AppText.fileCountSuffix}'),
+                  subtitle:
+                      Text('${folder.fileCount} ${AppText.fileCountSuffix}'),
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12)),
                   onTap: () {
@@ -146,8 +155,8 @@ class _DriveHomeScreenState extends ConsumerState<DriveHomeScreen> {
                     }
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                          content:
-                              Text('${AppText.uploadingN} ${files.length} ${AppText.uploadingFilesSuffix}')),
+                          content: Text(
+                              '${AppText.uploadingN} ${files.length} ${AppText.uploadingFilesSuffix}')),
                     );
                   },
                 )),
@@ -228,7 +237,8 @@ class _DriveHomeScreenState extends ConsumerState<DriveHomeScreen> {
         ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(ctx), child: const Text(AppText.cancel)),
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text(AppText.cancel)),
           ElevatedButton(
             onPressed: () {
               Navigator.pop(ctx);
@@ -268,7 +278,7 @@ class _DriveHomeScreenState extends ConsumerState<DriveHomeScreen> {
       body: RefreshIndicator(
         onRefresh: () => ref.read(driveProvider.notifier).loadAll(),
         color: AppColors.primary,
-        backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+        backgroundColor: isDark ? AppColors.cardDark : Colors.white,
         child: CustomScrollView(
           slivers: [
             _buildSliverAppBar(driveState, isDark),
@@ -282,7 +292,12 @@ class _DriveHomeScreenState extends ConsumerState<DriveHomeScreen> {
             if (uploadState.hasActiveTasks)
               SliverToBoxAdapter(
                   child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.md,
+                  AppSpacing.xs,
+                  AppSpacing.md,
+                  0,
+                ),
                 child: UploadProgressCard(tasks: uploadState.tasks),
               )),
             _buildFilterBar(driveState),
@@ -421,19 +436,19 @@ class _DriveHomeScreenState extends ConsumerState<DriveHomeScreen> {
 
     return SliverToBoxAdapter(
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8),
+        padding: AppSpacing.vXS,
         child: Row(
           children: [
             Expanded(
               child: SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding: AppSpacing.hMD,
                 child: Row(
                   children: types.map((type) {
                     final isSelected = driveState.filterType == type;
 
                     return Padding(
-                      padding: const EdgeInsets.only(right: 8),
+                      padding: const EdgeInsets.only(right: AppSpacing.xs),
                       child: FilterChip(
                         avatar: SvgPicture.asset(
                           icons[type] ?? 'assets/icons/d.svg',
@@ -465,7 +480,7 @@ class _DriveHomeScreenState extends ConsumerState<DriveHomeScreen> {
 
   Widget _buildGridView(List<DriveFile> files, DriveState state) {
     return SliverPadding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: AppSpacing.hMD,
       sliver: SliverGrid(
         delegate: SliverChildBuilderDelegate(
           (_, i) => FileGridItem(
@@ -532,16 +547,20 @@ class _SortButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(right: 8),
+      padding: const EdgeInsets.only(right: AppSpacing.xs),
       child: PopupMenuButton<SortOption>(
         icon: const Icon(Icons.sort_rounded, size: 22),
         tooltip: AppText.tooltipSearch,
         onSelected: onChanged,
         itemBuilder: (_) => const [
-          PopupMenuItem(value: SortOption.newest, child: Text(AppText.sortNewest)),
-          PopupMenuItem(value: SortOption.oldest, child: Text(AppText.sortOldest)),
-          PopupMenuItem(value: SortOption.nameAZ, child: Text(AppText.sortNameAZ)),
-          PopupMenuItem(value: SortOption.nameZA, child: Text(AppText.sortNameZA)),
+          PopupMenuItem(
+              value: SortOption.newest, child: Text(AppText.sortNewest)),
+          PopupMenuItem(
+              value: SortOption.oldest, child: Text(AppText.sortOldest)),
+          PopupMenuItem(
+              value: SortOption.nameAZ, child: Text(AppText.sortNameAZ)),
+          PopupMenuItem(
+              value: SortOption.nameZA, child: Text(AppText.sortNameZA)),
           PopupMenuItem(
               value: SortOption.sizeDesc, child: Text(AppText.sortLargest)),
           PopupMenuItem(

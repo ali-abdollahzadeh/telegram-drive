@@ -124,17 +124,28 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   String _cleanError(Object e) {
     final msg = e.toString().replaceFirst('Exception: ', '');
+
     // Make TDLib errors user-friendly
-    if (msg.contains('PHONE_NUMBER_INVALID'))
+    if (msg.contains('PHONE_NUMBER_INVALID')) {
       return 'Invalid phone number format.';
-    if (msg.contains('PHONE_CODE_INVALID'))
+    }
+
+    if (msg.contains('PHONE_CODE_INVALID')) {
       return 'The verification code is incorrect.';
-    if (msg.contains('PHONE_CODE_EXPIRED'))
+    }
+
+    if (msg.contains('PHONE_CODE_EXPIRED')) {
       return 'The code has expired. Please try again.';
-    if (msg.contains('PASSWORD_HASH_INVALID'))
+    }
+
+    if (msg.contains('PASSWORD_HASH_INVALID')) {
       return 'Wrong password. Please try again.';
-    if (msg.contains('timed out'))
+    }
+
+    if (msg.contains('timed out')) {
       return 'Connection timed out. Check your internet.';
+    }
+
     return msg;
   }
 }

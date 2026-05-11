@@ -1,4 +1,4 @@
-package com.teledrive.tele_drive
+package dev.aliabdollahzadeh.teledrive
 
 import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine

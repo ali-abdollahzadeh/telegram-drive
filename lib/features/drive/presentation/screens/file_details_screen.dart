@@ -101,6 +101,8 @@ class _FileDetailsScreenState extends ConsumerState<FileDetailsScreen> {
 
     final exists = await File(path).exists();
 
+    if (!mounted) return;
+
     if (!exists) {
       _showMessage('File not found on device.');
       return;

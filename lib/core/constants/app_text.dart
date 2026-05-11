@@ -220,28 +220,40 @@ class AppText {
       'This will remove your local session data. You will need to log in again.';
   static const clearSessionConfirm = 'Clear';
 
-  // ---------------------------------------------------------------------------
-  // Privacy Policy screen
-  // ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// Privacy Policy screen
+// ---------------------------------------------------------------------------
   static const privacyPolicyTitle = 'Privacy Policy';
+
   static const privacyCommitmentHeading = 'Our Commitment to Privacy';
   static const privacyCommitmentBody =
-      'This project is completely free and open-source. We built this app exactly how a privacy policy should be: simple, honest, and completely respectful of your data.';
+      'TeleDrive is built to respect your privacy. The app is designed to help you access and manage files from your own Telegram account without using our own servers.';
 
-  static const privacySection1Title = 'Zero Data Collection';
+  static const privacySection1Title = 'No Personal Data Sold or Shared';
   static const privacySection1Body =
-      'We do not save, collect, or transmit any of your personal information. Everything remains on your device.';
+      'We do not sell your personal data, share it with advertisers, or use it for tracking. TeleDrive does not include ads or advertising trackers.';
 
-  static const privacySection2Title = 'Only Your Device';
+  static const privacySection2Title = 'Telegram Account Access';
   static const privacySection2Body =
-      'All your files, sessions, and data are stored entirely on your local phone storage and your personal Telegram cloud. We do not have any servers to store your data.';
+      'TeleDrive connects to your Telegram account only to provide app features such as file browsing, previewing, and opening your files. Authentication and Telegram data access are handled through Telegram/TDLib.';
 
-  static const privacySection3Title = '100% Free';
+  static const privacySection3Title = 'Local Storage';
   static const privacySection3Body =
-      'This is a free project. There are no hidden fees, no trackers, and absolutely no ads.';
+      'Some app data, such as session information, cached files, and downloaded files, may be stored locally on your device so the app can work correctly. You can remove this data by clearing the app data or uninstalling the app.';
+
+  static const privacySection4Title = 'No TeleDrive Servers';
+  static const privacySection4Body =
+      'TeleDrive does not operate its own servers to store your Telegram files, messages, phone number, or account data. Your files remain on your device and in your personal Telegram cloud.';
+
+  static const privacySection5Title = 'Free and Open Source';
+  static const privacySection5Body =
+      'TeleDrive is a free and open-source project. There are no hidden fees, no ads, and no advertising trackers.';
+
+  static const privacySection6Title = 'Independent Project';
+  static const privacySection6Body =
+      'TeleDrive is an independent project and is not affiliated with, endorsed by, or sponsored by Telegram.';
 
   static const privacyLastUpdated = 'Last updated: May 2026';
-
   // ---------------------------------------------------------------------------
   // Preview screens (shared)
   // ---------------------------------------------------------------------------

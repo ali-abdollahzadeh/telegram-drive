@@ -147,7 +147,7 @@ class _AudioPreviewScreenState extends ConsumerState<AudioPreviewScreen> {
               maxLines: 2,
             ),
             const SizedBox(height: 8),
-            Text('${AppText.audioFile}',
+            Text(AppText.audioFile,
                 style: Theme.of(context).textTheme.bodyMedium),
             const SizedBox(height: 32),
             // Progress

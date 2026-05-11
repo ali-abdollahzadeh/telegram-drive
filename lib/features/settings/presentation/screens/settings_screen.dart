@@ -6,12 +6,12 @@ import 'package:go_router/go_router.dart';
 import 'package:file_picker/file_picker.dart';
 
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/constants/app_dimensions.dart';
 import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/constants/app_text.dart';
 import '../../../../core/routing/app_router.dart';
 import '../../../../services/platform/native_telegram_channel.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/widgets/common_widgets.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../providers/settings_provider.dart';
@@ -70,7 +70,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       subtitle: subtitle,
                       imagePath: photoPath,
                     ),
-                    const SizedBox(height: 32),
+                    AppSpacing.gapXXL,
                     _SettingsCard(
                       children: [
                         _TelegramSettingsTile(
@@ -81,9 +81,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           trailing: DropdownButtonHideUnderline(
                             child: DropdownButton<ThemeMode>(
                               value: themeMode,
-                              dropdownColor: isDark
-                                  ? const Color(0xFF1C1C1E)
-                                  : Colors.white,
+                              dropdownColor:
+                                  isDark ? AppColors.cardDark : Colors.white,
                               style: TextStyle(
                                   color: isDark ? Colors.white : Colors.black),
                               iconEnabledColor:
@@ -162,7 +161,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 24),
+                    AppSpacing.gapXL,
                     _SettingsCard(
                       children: [
                         _TelegramSettingsTile(
@@ -188,7 +187,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 24),
+                    AppSpacing.gapXL,
                     _SettingsCard(
                       children: [
                         _TelegramSettingsTile(
@@ -201,7 +200,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
+                    AppSpacing.gapMD,
                     Text(
                       'TeleDrive for Android  v${AppConstants.appVersion}\n Telegram Database Library (TDLib) integrated',
                       textAlign: TextAlign.center,
@@ -219,7 +218,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ),
               error: (e, st) => Center(
                 child: Padding(
-                  padding: const EdgeInsets.all(24),
+                  padding: AppSpacing.padXXL,
                   child: Text(
                     'Error loading profile\n$e',
                     textAlign: TextAlign.center,
@@ -266,19 +265,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         actions: [
           TextButton(
             style: TextButton.styleFrom(
-              foregroundColor: isDark
-                  ? Colors.white
-                  : Colors.black,
+              foregroundColor: isDark ? Colors.white : Colors.black,
             ),
             onPressed: () => Navigator.pop(context),
             child: const Text(AppText.cancel),
           ),
-          const SizedBox(width: 8),
+          AppSpacing.hGapXS,
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.error,
               foregroundColor: Colors.white,
-              minimumSize: const Size(90, 40),
+              minimumSize: const Size(90, AppDimensions.buttonHeightSM),
             ),
             onPressed: () async {
               Navigator.pop(context);
@@ -310,19 +307,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         actions: [
           TextButton(
             style: TextButton.styleFrom(
-              foregroundColor: isDark
-                  ? Colors.white
-                  : Colors.black,
+              foregroundColor: isDark ? Colors.white : Colors.black,
             ),
             onPressed: () => Navigator.pop(context),
             child: const Text(AppText.cancel),
           ),
-          const SizedBox(width: 8),
+          AppSpacing.hGapXS,
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,
               foregroundColor: Colors.white,
-              minimumSize: const Size(90, 40),
+              minimumSize: const Size(90, AppDimensions.buttonHeightSM),
               padding: const EdgeInsets.symmetric(
                 horizontal: 20,
                 vertical: 10,
@@ -378,7 +373,7 @@ class _ProfileHeader extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 18),
+        const SizedBox(height: AppSpacing.lg),
         Text(
           name,
           textAlign: TextAlign.center,
@@ -389,7 +384,7 @@ class _ProfileHeader extends StatelessWidget {
             letterSpacing: -0.5,
           ),
         ),
-        const SizedBox(height: 6),
+        const SizedBox(height: AppSpacing.xxs),
         Text(
           subtitle,
           textAlign: TextAlign.center,
@@ -414,11 +409,10 @@ class _SettingsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Container(
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-        borderRadius: BorderRadius.circular(28),
-      ),
+    return AppCard(
+      color: isDark ? AppColors.cardDark : Colors.white,
+      borderRadius: AppRadius.xxl,
+      hasBorder: false,
       child: Column(
         children: children,
       ),
@@ -453,18 +447,13 @@ class _TelegramSettingsTile extends StatelessWidget {
         horizontal: 15,
         vertical: 0,
       ),
-      leading: Container(
-        width: 25,
-        height: 25,
-        decoration: BoxDecoration(
-          color: iconBackground,
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Icon(
-          icon,
-          color: Colors.white,
-          size: 15,
-        ),
+      leading: IconBadge(
+        icon: icon,
+        color: Colors.white,
+        backgroundColor: iconBackground,
+        size: AppDimensions.settingsIconSize,
+        iconSize: AppDimensions.settingsIconGlyph,
+        borderRadius: AppRadius.sm,
       ),
       title: Text(
         title,

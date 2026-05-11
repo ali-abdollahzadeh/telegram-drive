@@ -13,9 +13,14 @@ val secretsFile = rootProject.file("secrets.properties")
 if (secretsFile.exists()) {
     secretsProperties.load(FileInputStream(secretsFile))
 }
+val keystoreProperties = Properties()
+val keystorePropertiesFile = rootProject.file("key.properties")
 
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+}
 android {
-    namespace = "com.teledrive.tele_drive"
+    namespace = "dev.aliabdollahzadeh.teledrive"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -33,7 +38,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.teledrive.tele_drive"
+        applicationId = "dev.aliabdollahzadeh.teledrive"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
@@ -62,17 +67,24 @@ android {
         }
     }
 
-    buildTypes {
-        release {
-            signingConfig = signingConfigs.getByName("debug")
+    signingConfigs {
+        create("release") {
+            keyAlias = keystoreProperties["keyAlias"] as String
+            keyPassword = keystoreProperties["keyPassword"] as String
+            storeFile = file(keystoreProperties["storeFile"] as String)
+            storePassword = keystoreProperties["storePassword"] as String
         }
     }
 
-    packaging {
-        jniLibs {
-            useLegacyPackaging = true
+    buildTypes {
+        release {
+            signingConfig = signingConfigs.getByName("release")
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
+
+    // Native libraries are left uncompressed by default for App Bundles, 
+    // which is the recommended approach for Play Store.
 }
 
 flutter {

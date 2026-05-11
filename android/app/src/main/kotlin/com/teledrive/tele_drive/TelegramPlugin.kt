@@ -1,4 +1,4 @@
-package com.teledrive.tele_drive
+package dev.aliabdollahzadeh.teledrive
 
 import android.content.Context
 import io.flutter.plugin.common.EventChannel
@@ -9,10 +9,10 @@ import io.flutter.plugin.common.MethodChannel
  * Bridges Flutter MethodChannel calls to TeleManager.
  *
  * Method channel:
- *   com.teledrive.app/telegram
+ *   dev.aliabdollahzadeh.teledrive/telegram
  *
  * Event channel:
- *   com.teledrive.app/telegram_events
+ *   dev.aliabdollahzadeh.teledrive/telegram_events
  *
  * Methods Flutter can call:
  *   initialize()                              → void
@@ -38,8 +38,8 @@ class TelegramPlugin(private val context: Context) :
     MethodChannel.MethodCallHandler, EventChannel.StreamHandler {
 
     companion object {
-        const val METHOD_CHANNEL = "com.teledrive.app/telegram"
-        const val EVENT_CHANNEL = "com.teledrive.app/telegram_events"
+        const val METHOD_CHANNEL = "dev.aliabdollahzadeh.teledrive/telegram"
+        const val EVENT_CHANNEL = "dev.aliabdollahzadeh.teledrive/telegram_events"
     }
 
     private val manager = TeleManager(context)
