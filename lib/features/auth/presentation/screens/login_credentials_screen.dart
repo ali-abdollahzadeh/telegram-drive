@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/constants/app_text.dart';
 import '../../../../core/routing/app_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../providers/auth_provider.dart';
@@ -123,7 +124,7 @@ class _LoginCredentialsScreenState
                       children: [
                         const SizedBox(height: 220),
                         Text(
-                          'Your phone number',
+                          AppText.signInWithTelegram,
                           textAlign: TextAlign.center,
                           style: theme.textTheme.headlineSmall?.copyWith(
                             fontWeight: FontWeight.w700,
@@ -131,7 +132,7 @@ class _LoginCredentialsScreenState
                         ),
                         const SizedBox(height: 12),
                         Text(
-                          'Please confirm your country code\nand enter your phone number.',
+                          AppText.enterYourPhone,
                           textAlign: TextAlign.center,
                           style: theme.textTheme.bodyLarge?.copyWith(
                             color: theme.textTheme.bodyMedium?.color
@@ -321,11 +322,11 @@ class _PhoneField extends StatelessWidget {
         final phone = value?.trim() ?? '';
 
         if (phone.isEmpty) {
-          return 'Phone number is required';
+          return AppText.phoneNumberRequired;
         }
 
         if (phone.length < 6) {
-          return 'Enter a valid phone number';
+          return AppText.phoneNumberInvalid;
         }
 
         return null;

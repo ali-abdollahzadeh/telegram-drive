@@ -15,10 +15,12 @@ class CodeVerificationScreen extends ConsumerStatefulWidget {
   const CodeVerificationScreen({super.key, required this.phoneNumber});
 
   @override
-  ConsumerState<CodeVerificationScreen> createState() => _CodeVerificationScreenState();
+  ConsumerState<CodeVerificationScreen> createState() =>
+      _CodeVerificationScreenState();
 }
 
-class _CodeVerificationScreenState extends ConsumerState<CodeVerificationScreen> {
+class _CodeVerificationScreenState
+    extends ConsumerState<CodeVerificationScreen> {
   final _codeCtrl = TextEditingController();
   int _countdown = 60;
   bool _canResend = false;
@@ -52,7 +54,8 @@ class _CodeVerificationScreenState extends ConsumerState<CodeVerificationScreen>
       return;
     }
 
-    final success = await ref.read(authProvider.notifier).verifyCode(_codeCtrl.text.trim());
+    final success =
+        await ref.read(authProvider.notifier).verifyCode(_codeCtrl.text.trim());
     if (!mounted) return;
 
     if (success) {
@@ -79,7 +82,8 @@ class _CodeVerificationScreenState extends ConsumerState<CodeVerificationScreen>
     ref.listen(authProvider, (_, next) {
       if (next.error != null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(next.error!), backgroundColor: AppColors.error),
+          SnackBar(
+              content: Text(next.error!), backgroundColor: AppColors.error),
         );
         ref.read(authProvider.notifier).clearError();
       }
@@ -122,7 +126,9 @@ class _CodeVerificationScreenState extends ConsumerState<CodeVerificationScreen>
             Row(
               children: [
                 Text(
-                  _canResend ? AppText.didntReceiveCode : '${AppText.resendIn}${_countdown}s',
+                  _canResend
+                      ? AppText.didntReceiveCode
+                      : '${AppText.resendIn}${_countdown}s',
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
                 if (_canResend) ...[
@@ -135,7 +141,8 @@ class _CodeVerificationScreenState extends ConsumerState<CodeVerificationScreen>
                       });
                       _startCountdown();
                     },
-                    style: TextButton.styleFrom(padding: EdgeInsets.zero, minimumSize: Size.zero),
+                    style: TextButton.styleFrom(
+                        padding: EdgeInsets.zero, minimumSize: Size.zero),
                     child: const Text(AppText.resend),
                   ),
                 ],

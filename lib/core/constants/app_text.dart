@@ -32,18 +32,24 @@ class AppText {
   // ---------------------------------------------------------------------------
   static const connectAccount = 'Connect Account';
 
+  // login page
+  static const signInWithTelegram = 'Sign In With Telegram';
+  static const enterYourPhone =
+      'Enter the phone number \n linked to your Telegram account.';
+
   // Form labels & hints
   static const phoneNumber = 'Phone Number';
   static const phoneNumberHint = '+1 234 567 8900';
   static const enterPhoneNumber = 'Enter your phone number';
 
   static const phoneLoginDescription =
-      'We use your phone number only to log in to your Telegram account. API credentials are handled inside the app.';
+      'We use your phone number only to log in to your Telegram account.';
 
   // Validation messages
-  static const phoneNumberRequired = 'Phone number is required';
+  static const phoneNumberRequired =
+      'Phone number connected to Telegram is required';
   static const phoneNumberInvalid =
-      'Enter a valid phone number with country code';
+      'Enter a valid phone number connected to Telegram';
 
   // Info card
   static const telegramSessionStoredOnDevice =
@@ -57,11 +63,12 @@ class AppText {
   // ---------------------------------------------------------------------------
   static const verifyCode = 'Verify Code';
   static const enterVerificationCode = 'Enter verification code';
-  static const codeSentTo = 'We sent a code to '; // append phone number
+  static const codeSentTo =
+      'Check Telegram for the code sent to '; // append phone number
   static const verificationCode = 'Verification Code';
   static const verificationCodeHint = '12345';
   static const pleaseEnterFullCode = 'Please enter the full verification code';
-  static const didntReceiveCode = "Didn't receive code?";
+  static const didntReceiveCode = "Didn’t get the code in Telegram?";
   static const resendIn = 'Resend in '; // append countdown string, e.g. "60s"
   static const resend = 'Resend';
   static const verify = 'Verify';
