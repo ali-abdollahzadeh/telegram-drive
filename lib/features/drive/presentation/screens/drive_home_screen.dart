@@ -391,18 +391,18 @@ class _DriveHomeScreenState extends ConsumerState<DriveHomeScreen> {
         ),
         IconButton(
           icon: Icon(driveState.viewMode == ViewMode.grid
-              ? Icons.view_list_rounded
-              : Icons.grid_view_rounded),
+              ? Icons.window_outlined
+              : Icons.list_outlined),
           onPressed: () => ref.read(driveProvider.notifier).toggleViewMode(),
           tooltip: AppText.tooltipToggleView,
         ),
         IconButton(
-          icon: const Icon(Icons.create_new_folder_rounded),
+          icon: const Icon(Icons.add_rounded),
           onPressed: _showCreateFolderDialog,
           tooltip: AppText.tooltipCreateFolder,
         ),
         IconButton(
-          icon: const Icon(Icons.settings_rounded),
+          icon: const Icon(Icons.more_vert_rounded),
           onPressed: () => context.push(AppRoutes.settings),
           tooltip: AppText.tooltipSettings,
         ),
