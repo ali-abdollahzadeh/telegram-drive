@@ -485,7 +485,7 @@ class _DriveHomeScreenState extends ConsumerState<DriveHomeScreen> {
                           onSelected: (_) =>
                               ref.read(driveProvider.notifier).setFilter(type),
                           backgroundColor: Colors.white,
-                          selectedColor: AppColors.secondaryLight,
+                          selectedColor: AppColors.primary,
                         ));
                   }).toList(),
                 ),
