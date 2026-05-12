@@ -381,7 +381,7 @@ class _DriveHomeScreenState extends ConsumerState<DriveHomeScreen> {
         ),
       ),
       iconTheme: IconThemeData(
-        color: isDark ? Colors.white : Colors.black,
+        color: isDark ? Colors.white : AppColors.cardDark,
       ),
       actions: [
         IconButton(
@@ -448,22 +448,45 @@ class _DriveHomeScreenState extends ConsumerState<DriveHomeScreen> {
                     final isSelected = driveState.filterType == type;
 
                     return Padding(
-                      padding: const EdgeInsets.only(right: AppSpacing.xs),
-                      child: FilterChip(
-                        avatar: SvgPicture.asset(
-                          icons[type] ?? 'assets/icons/d.svg',
-                          width: 18,
-                          height: 18,
-                        ),
-                        label: Text(labels[type] ?? AppText.filterOther),
-                        selected: isSelected,
-                        onSelected: (_) =>
-                            ref.read(driveProvider.notifier).setFilter(type),
-                        selectedColor:
-                            AppColors.primary.withValues(alpha: 0.18),
-                        checkmarkColor: AppColors.primary,
-                      ),
-                    );
+                        padding: const EdgeInsets.only(right: AppSpacing.xs),
+                        child: FilterChip(
+                          showCheckmark: false,
+                          avatar: Container(
+                            width: 18,
+                            height: 18,
+                            decoration: const BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                            ),
+                            alignment: Alignment.center,
+                            child: isSelected
+                                ? const Icon(
+                                    Icons.check_rounded,
+                                    size: 14,
+                                    color: AppColors.primary,
+                                  )
+                                : SvgPicture.asset(
+                                    icons[type] ?? 'assets/icons/d.svg',
+                                    width: 14,
+                                    height: 14,
+                                  ),
+                          ),
+                          label: Text(
+                            labels[type] ?? AppText.filterOther,
+                            style: TextStyle(
+                              color:
+                                  isSelected ? Colors.white : AppColors.primary,
+                              fontWeight: isSelected
+                                  ? FontWeight.w600
+                                  : FontWeight.w400,
+                            ),
+                          ),
+                          selected: isSelected,
+                          onSelected: (_) =>
+                              ref.read(driveProvider.notifier).setFilter(type),
+                          backgroundColor: Colors.white,
+                          selectedColor: AppColors.secondaryLight,
+                        ));
                   }).toList(),
                 ),
               ),
