@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="assets/icons/app_icon.png" style="border-radius: 50%;" alt="teleDrive Logo" width="128" height="128">
+  <img src="assets/icons/teledrive-icon.png" alt="teleDrive Logo" width="128" height="128">
 </div>
 
 # teleDrive
