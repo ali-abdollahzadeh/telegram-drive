@@ -166,11 +166,20 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       children: [
                         _TelegramSettingsTile(
                           icon: Icons.privacy_tip_rounded,
-                          iconBackground: const Color(0xFFB8860B),
+                          iconBackground: const Color(0xFF8B5CF6),
                           title: AppText.settingsTitlePrivacyPolicy,
                           subtitle: AppText.settingsSubtitlePrivacyPolicy,
                           onTap: () {
                             context.push(AppRoutes.privacyPolicy);
+                          },
+                        ),
+                        _TelegramSettingsTile(
+                          icon: Icons.description_rounded,
+                          iconBackground: const Color(0xFFFFA000),
+                          title: AppText.settingsTitleTermsOfUse,
+                          subtitle: AppText.settingsSubtitleTermsOfUse,
+                          onTap: () {
+                            context.push(AppRoutes.termsOfUse);
                           },
                         ),
                         _TelegramSettingsTile(

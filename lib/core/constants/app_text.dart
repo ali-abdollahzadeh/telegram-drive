@@ -96,6 +96,8 @@ class AppText {
   static const tooltipSearch = 'Search';
   static const tooltipToggleView = 'Toggle view';
   static const tooltipCreateFolder = 'Create folder';
+  static const createFolderTelegramNote =
+      'A private Telegram channel will be created in your account to store these files.';
   static const tooltipSettings = 'Settings';
   static const tooltipDeleteSelected = 'Delete selected';
 
@@ -204,7 +206,12 @@ class AppText {
   static const settingsTitleDownloadLocation = 'Download Location';
 
   static const settingsTitlePrivacyPolicy = 'Privacy Policy';
-  static const settingsSubtitlePrivacyPolicy = 'All data stays on your device';
+  static const settingsSubtitlePrivacyPolicy =
+      'Rules for using TeleDrive responsibly';
+
+  static const settingsTitleTermsOfUse = 'Terms of Use';
+  static const settingsSubtitleTermsOfUse =
+      'Legal terms for using TeleDrive services';
 
   static const settingsTitleLicenses = 'Open Source Licenses';
   static const settingsSubtitleLicenses = 'Flutter and package licenses';
@@ -242,7 +249,7 @@ class AppText {
 
   static const privacySection2Title = 'Telegram Account Access';
   static const privacySection2Body =
-      'TeleDrive connects to your Telegram account only to provide app features such as file browsing, previewing, and opening your files. Authentication and Telegram data access are handled through Telegram/TDLib.';
+      'TeleDrive connects to your Telegram account only to provide app features such as file browsing, previewing, uploading, downloading, and opening your files. Authentication and Telegram data access are handled through Telegram/TDLib. You are responsible for using your Telegram account in accordance with Telegram’s Terms of Service.';
 
   static const privacySection3Title = 'Local Storage';
   static const privacySection3Body =
@@ -250,7 +257,7 @@ class AppText {
 
   static const privacySection4Title = 'No TeleDrive Servers';
   static const privacySection4Body =
-      'TeleDrive does not operate its own servers to store your Telegram files, messages, phone number, or account data. Your files remain on your device and in your personal Telegram cloud.';
+      'TeleDrive does not operate its own servers to store your Telegram files, messages, phone number, or account data. Your files remain on your device and within the Telegram account storage spaces you choose to use, such as Saved Messages or private channels.';
 
   static const privacySection5Title = 'Free and Open Source';
   static const privacySection5Body =
@@ -261,6 +268,50 @@ class AppText {
       'TeleDrive is an independent project and is not affiliated with, endorsed by, or sponsored by Telegram.';
 
   static const privacyLastUpdated = 'Last updated: May 2026';
+
+  // ---------------------------------------------------------------------------
+  // Terms of Use screen
+  // ---------------------------------------------------------------------------
+  static const termsOfUseTitle = 'Terms of Use';
+
+  static const termsIntroHeading = 'Using TeleDrive Responsibly';
+  static const termsIntroBody =
+      'By using TeleDrive, you agree to use the app responsibly and in accordance with Telegram’s Terms of Service and any applicable laws. TeleDrive is an independent tool that helps you manage files in your own Telegram account.';
+
+  static const termsSection1Title = 'Independent Project';
+  static const termsSection1Body =
+      'TeleDrive is not affiliated with, endorsed by, or sponsored by Telegram. Telegram names, services, and infrastructure belong to Telegram and are governed by Telegram’s own rules and policies.';
+
+  static const termsSection2Title = 'Your Telegram Account';
+  static const termsSection2Body =
+      'You are responsible for your own Telegram account and for all activity performed through it. TeleDrive only acts as a client interface to help you access and manage files using your account.';
+
+  static const termsSection3Title = 'Acceptable Use';
+  static const termsSection3Body =
+      'You must not use TeleDrive to upload, store, share, or manage illegal, harmful, abusive, copyrighted, or otherwise unauthorized content. You must also avoid spam, automated abuse, mass account activity, or any behavior that may violate Telegram’s Terms of Service.';
+
+  static const termsSection4Title = 'Telegram Limits and Availability';
+  static const termsSection4Body =
+      'TeleDrive depends on Telegram/TDLib and Telegram’s services. Features may stop working, become limited, or behave differently if Telegram changes its API, applies account limits, restricts activity, or changes its policies.';
+
+  static const termsSection5Title = 'Private Channels and Folders';
+  static const termsSection5Body =
+      'Some TeleDrive folders may be created as private Telegram channels or use spaces such as Saved Messages. You should create and use these folders reasonably and avoid excessive automated creation, uploading, or other activity that may look abusive to Telegram.';
+
+  static const termsSection6Title = 'No Guarantee of Service';
+  static const termsSection6Body =
+      'TeleDrive is provided as is, without warranties or guarantees. We do not guarantee that files, previews, downloads, uploads, sessions, or Telegram access will always work without errors or interruptions.';
+
+  static const termsSection7Title = 'No Responsibility for User Content';
+  static const termsSection7Body =
+      'You are fully responsible for the files and content you access, upload, download, store, or manage through TeleDrive. TeleDrive does not review or control your personal Telegram content.';
+
+  static const termsSection8Title = 'Open Source Project';
+  static const termsSection8Body =
+      'TeleDrive is a free and open-source project. You may review the source code to understand how the app works. Future versions may change features, limitations, or supported platforms.';
+
+  static const termsLastUpdated = 'Last updated: May 2026';
+
   // ---------------------------------------------------------------------------
   // Preview screens (shared)
   // ---------------------------------------------------------------------------

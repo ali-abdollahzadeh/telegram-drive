@@ -223,22 +223,38 @@ class _DriveHomeScreenState extends ConsumerState<DriveHomeScreen> {
 
   void _showCreateFolderDialog() {
     final ctrl = TextEditingController();
+
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Create Folder'),
-        content: TextField(
-          controller: ctrl,
-          autofocus: true,
-          decoration: const InputDecoration(
-            hintText: AppText.folderNameHint,
-            prefixIcon: Icon(Icons.folder_rounded),
-          ),
+        title: const Text(AppText.createFolder),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              AppText.createFolderTelegramNote,
+              style: TextStyle(
+                fontSize: 14,
+                height: 1.4,
+              ),
+            ),
+            AppSpacing.gapMD,
+            TextField(
+              controller: ctrl,
+              autofocus: true,
+              decoration: const InputDecoration(
+                hintText: AppText.folderNameHint,
+                prefixIcon: Icon(Icons.folder_rounded),
+              ),
+            ),
+          ],
         ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text(AppText.cancel)),
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text(AppText.cancel),
+          ),
           ElevatedButton(
             onPressed: () {
               Navigator.pop(ctx);

@@ -1,6 +1,6 @@
 # teleDrive
 
-teleDrive is a modern, high-performance Flutter application that transforms your Telegram account into a personal, unlimited cloud storage drive. It leverages the official Telegram API (via native TDLib) to offer seamless file management using your "Saved Messages" and private channels as storage folders.
+teleDrive is a modern, high-performance Flutter application that transforms your Telegram account into a personal cloud storage drive. It leverages the official Telegram API (via native TDLib) to offer seamless file management using your "Saved Messages" and private channels as storage folders.
 
 ## ✨ Features
 

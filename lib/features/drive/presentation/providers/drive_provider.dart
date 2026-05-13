@@ -166,7 +166,8 @@ class DriveNotifier extends StateNotifier<DriveState> {
   void switchFolder(String folderId) {
     if (folderId == state.currentFolderId) return;
     // Clear current files immediately so the loading spinner shows
-    state = state.copyWith(files: [], isLoadingFiles: true, currentFolderId: folderId);
+    state = state
+        .copyWith(files: [], isLoadingFiles: true, currentFolderId: folderId);
     loadFiles(folderId: folderId);
   }
 
